@@ -1,0 +1,13 @@
+{
+  "name": "@zero-template/mail",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "dev": "email preview emails/templates"
+  },
+  "dependencies": {
+    "jsx-email": "^2.8.1",
+    "react": "catalog:",
+    "@types/react": "catalog:"
+  }
+}

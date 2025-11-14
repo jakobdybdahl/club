@@ -1,0 +1,30 @@
+services:
+  zero_template_postgres:
+    image: postgres:16.4
+    shm_size: 1g
+    user: postgres
+    restart: always
+    healthcheck:
+      test: "pg_isready -U user --dbname=zero-template"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 6430:5432
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_DB: zero-template
+      POSTGRES_PASSWORD: password
+    command: |
+      postgres 
+      -c wal_level=logical
+      -c max_wal_senders=10 
+      -c max_replication_slots=5 
+      -c hot_standby=on 
+      -c hot_standby_feedback=on
+    volumes:
+      - zero_template_pgdata:/var/lib/postgresql/data
+
+volumes:
+  zero_template_pgdata:
+    driver: local

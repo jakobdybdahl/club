@@ -1,0 +1,13 @@
+{
+  "name": "@zero-template/zero",
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "@rocicorp/zero": "catalog:",
+    "zod": "catalog:"
+  },
+  "scripts": {
+    "gen:permissions": "zero-deploy-permissions -p ./schema.ts --output-format=sql --output-file=.permissions.sql",
+    "dev": "zero-deploy-permissions && zero-cache"
+  }
+}

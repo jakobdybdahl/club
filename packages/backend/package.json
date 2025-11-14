@@ -1,0 +1,25 @@
+{
+  "name": "@zero-template/backend",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun sst shell vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "sst": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@zero-template/core": "workspace:*",
+    "@zero-template/zero": "workspace:*",
+    "@hono/zod-validator": "0.7.4",
+    "@rocicorp/zero": "catalog:",
+    "hono": "4.10.4",
+    "zod": "catalog:"
+  }
+}

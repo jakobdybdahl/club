@@ -1,0 +1,30 @@
+{
+  "name": "@zero-template/core",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "db": "sst shell drizzle-kit",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "drizzle-kit": "0.31.0",
+    "sst": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.927.0",
+    "@aws-sdk/s3-presigned-post": "^3.927.0",
+    "@aws-sdk/s3-request-presigner": "^3.927.0",
+    "bignumber.js": "^9.3.1",
+    "dayjs": "catalog:",
+    "drizzle-orm": "0.44.7",
+    "drizzle-zod": "0.8.3",
+    "nanoid": "catalog:",
+    "postgres": "3.4.5",
+    "zod": "catalog:"
+  }
+}
