@@ -7,13 +7,15 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
+import { Conditions } from "@aws-sdk/s3-presigned-post/dist-types/types";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { nanoid } from "nanoid";
 import { Resource } from "sst";
 import { useWorkspace } from "../actor";
+import { assert } from "../util/asserts";
 
 const s3 = new S3Client();
-const workspaceTagKey = "px:workspace" as const;
+const workspaceTagKey = "app:club" as const;
 
 const temporaryPath = {
   "1d": "daily",
@@ -33,6 +35,8 @@ const getPath = (
   let path = [useWorkspace(), postfix];
   if (opts.ttl) {
     path = ["temporary", temporaryPath[opts.ttl], ...path];
+  } else {
+    path = [Resource.Cdn.prefixes.restricted, ...path];
   }
   return path.join("/");
 };
@@ -72,11 +76,15 @@ export function keyFromUrl(url: string) {
 
 type GetUploadOptions = {
   /**
+   * The id of the file
+   */
+  id?: string;
+  /**
    * Set the type of content. The type affects the key of the S3 object
    *
    * @default 'restricted'
    */
-  type?: "restricted";
+  type?: "public" | "restricted";
   /**
    * Max allowed size of the uploaded file. Defined in bytes.
    * @example
@@ -100,7 +108,6 @@ type GetUploadOptions = {
    * Set the content type
    * @example
    * await Storage.getUpload({ contentType: 'image/png' })
-   *
    * await Storage.getUpload({ contentType: { startsWith: 'image/' }})
    */
   contentType?: string | { startsWith: string };
@@ -118,16 +125,29 @@ type GetUploadOptions = {
   ttl?: number;
 };
 
+export function restrictedKey({
+  id,
+  context,
+}: {
+  id: string;
+  context: string;
+}): string {
+  return getPath(`${context}/${id}`);
+}
+
 export async function getUpload(opts: GetUploadOptions = {}) {
   const {
+    id = nanoid(),
     type = "restricted",
     size = 6_000_000, // 6 MB
     context = "global",
     uploadExpiration = 60,
   } = opts;
 
-  const id = nanoid();
-  const path = getPath(`${context}/${id}`);
+  const key =
+    type === "restricted"
+      ? restrictedKey({ context, id })
+      : `${Resource.Cdn.prefixes.public}/${id}`;
 
   const extraFields: Record<string, string> = {
     tagging: `<Tagging><TagSet><Tag><Key>${workspaceTagKey}</Key><Value>${useWorkspace()}</Value></Tag></TagSet></Tagging>`,
@@ -137,25 +157,78 @@ export async function getUpload(opts: GetUploadOptions = {}) {
     extraFields["Cache-Control"] = `max-age=${opts.ttl}`;
   }
 
+  const conditions: Conditions[] = [
+    { bucket: Resource.Storage.name },
+    ["content-length-range", 10, size],
+  ];
+
+  if (opts.contentType) {
+    conditions.push(
+      typeof opts.contentType === "string"
+        ? { "Content-Type": opts.contentType }
+        : ["starts-with", "$Content-Type", opts.contentType.startsWith]
+    );
+  }
+
   const { url, fields } = await createPresignedPost(s3, {
     Bucket: Resource.Storage.name,
-    Key: path,
+    Key: key,
     Expires: uploadExpiration,
     Fields: extraFields,
-    Conditions: [
-      { bucket: Resource.Storage.name },
-      ["content-length-range", 10, size],
-      opts.contentType
-        ? typeof opts.contentType === "string"
-          ? { "Content-Type": opts.contentType }
-          : ["starts-with", "$Content-Type", opts.contentType.startsWith]
-        : {},
-    ],
+    Conditions: conditions,
   });
 
   return {
-    path,
+    key,
     url,
     fields,
   };
+}
+
+type GetDownloadOptions = {
+  /**
+   * The id of the file
+   */
+  id: string;
+  /**
+   * Set the type of content. The type affects the key of the S3 object
+   *
+   * @default 'restricted'
+   */
+  type?: "restricted";
+  /**
+   * Define the context of the file. Affects the key of the S3 object
+   *
+   * @example
+   * // key = /restricted/<workspace-id>/billing/<id>
+   * await Storage.getUpload({ context: 'billing' })
+   *
+   * @default 'global'
+   */
+  context?: string;
+  /**
+   * Override the filename of the downloaded file
+   *
+   */
+  filename?: string;
+};
+
+export async function getDownload(opts: GetDownloadOptions) {
+  const { id, type = "restricted", context = "global" } = opts;
+  assert(type === "restricted", "Only download of restricted files supported.");
+
+  const expiresIn = 60; // seconds
+  const url = await getSignedUrl(
+    s3,
+    new GetObjectCommand({
+      Bucket: Resource.Storage.name,
+      Key: restrictedKey({ context, id }),
+      ResponseContentDisposition: opts.filename
+        ? `attachment;filename*=UTF-8''${encodeURIComponent(opts.filename)}`
+        : undefined,
+    }),
+    { expiresIn }
+  );
+
+  return { url, expiresIn };
 }

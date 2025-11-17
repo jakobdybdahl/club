@@ -1,12 +1,12 @@
 /// <reference path="./.sst/platform/config.d.ts" />
-
 export default $config({
   app(input) {
     return {
-      name: "zero-template",
+      name: "club",
       removal: input?.stage === "production" ? "retain" : "remove",
       protect: ["production"].includes(input?.stage),
       home: "aws",
+      providers: { command: "1.1.3", random: "4.18.4" },
     };
   },
   async run() {

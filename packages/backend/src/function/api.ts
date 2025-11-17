@@ -2,11 +2,13 @@ import {
   ForbiddenError,
   VersionMismatchError,
   VisibleError,
-} from "@zero-template/core/util/error";
+} from "@club/core/util/error";
 import { Hono } from "hono";
 import { handle } from "hono/aws-lambda";
 import { HTTPException } from "hono/http-exception";
 import { ZodError } from "zod";
+import { AccountRoute } from "../api/account";
+import { auth } from "../api/auth";
 import { ZeroRoute } from "../api/sync";
 
 export const api = new Hono()
@@ -14,7 +16,7 @@ export const api = new Hono()
     c.header("Cache-Control", "no-store");
     return next();
   })
-  // .use(deps.auth ?? auth)
+  .use(auth)
   .onError((error, c) => {
     if (error instanceof ForbiddenError) {
       return c.json(
@@ -76,6 +78,9 @@ export const api = new Hono()
     );
   })
   .get("/", (c) => c.text("ok"))
+  .route("/account", AccountRoute)
   .route("/sync", ZeroRoute);
 
 export const handler = handle(api);
+
+export type ApiType = typeof api;

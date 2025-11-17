@@ -1,13 +1,10 @@
+import { sql } from "@club/core/drizzle/index";
+import { createTransaction, Transaction } from "@club/core/util/transaction";
 import {
   Database,
   TransactionProviderHooks,
   TransactionProviderInput,
 } from "@rocicorp/zero/pg";
-import { sql } from "@zero-template/core/drizzle/index";
-import {
-  createTransaction,
-  Transaction,
-} from "@zero-template/core/util/transaction";
 
 export class DrizzleDatabaseProvider implements Database<Transaction> {
   transaction<R>(

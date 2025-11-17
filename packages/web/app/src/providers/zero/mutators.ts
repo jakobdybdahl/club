@@ -1,23 +1,50 @@
+import type { Event } from "@club/core/event/index";
+import type { User } from "@club/core/user/index";
+import type { WithId, WithRequired } from "@club/core/util/types";
+import type { schema } from "@club/zero/schema";
 import type { CustomMutatorDefs, Transaction } from "@rocicorp/zero";
-import type { Message } from "@zero-template/core/message/index";
-import type { WithId } from "@zero-template/core/util/types";
-import type { schema } from "@zero-template/zero/schema";
 
 export type MutatorTx = Transaction<typeof schema>;
 
-export const mutators = {
-  message: {
-    create: async (tx: MutatorTx, input: WithId<Message.CreateInput>) => {
-      await tx.mutate.message.insert({
-        id: input.id,
-        content: input.content,
-        sender: input.sender,
-        timeCreated: input.timeCreated,
-        timeUpdated: input.timeUpdated,
-      });
+type Populated<T extends { timeCreated?: number; timeUpdated?: number }> =
+  WithRequired<T, "timeCreated" | "timeUpdated"> & {
+    clubId: string;
+    userId: string;
+  };
+
+type Create<T extends { timeCreated?: number; timeUpdated?: number }> =
+  Populated<T extends { id?: string | undefined | null } ? WithId<T> : T>;
+
+export function createMutators() {
+  return {
+    user: {
+      create: async (tx: MutatorTx, input: Create<User.CreateInput>) => {
+        await tx.mutate.user.insert({
+          timeCreated: input.timeCreated,
+          timeUpdated: input.timeUpdated,
+          id: input.id,
+          email: input.email,
+          color: "",
+          initials: "",
+          clubId: input.clubId,
+          creatorId: input.userId,
+          creatorType: "user",
+        });
+      },
     },
-    remove: async (tx: MutatorTx, input: Message.RemoveInput) => {
-      await tx.mutate.message.delete({ id: input.id });
+    event: {
+      create: async (tx: MutatorTx, input: Create<Event.CreateInput>) => {
+        await tx.mutate.event.insert({
+          id: input.id,
+          clubId: input.clubId,
+          creatorId: input.userId,
+          creatorType: "user",
+          name: input.name,
+          visibility: input.visibility ?? "private",
+          timeCreated: input.timeCreated,
+          timeUpdated: input.timeUpdated,
+        });
+      },
     },
-  },
-} satisfies CustomMutatorDefs;
+  } satisfies CustomMutatorDefs;
+}

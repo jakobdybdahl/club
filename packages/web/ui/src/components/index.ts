@@ -2,6 +2,7 @@ export * from "./button";
 export * from "./dialog";
 export * from "./form";
 export * from "./input";
+export * from "./input-otp";
 export * from "./label";
 export * from "./separator";
 export * from "./sonner";

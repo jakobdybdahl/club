@@ -6,7 +6,7 @@ export const database = new sst.aws.Postgres("Database", {
   dev: {
     username: "user",
     password: "password",
-    database: "zero-template",
+    database: "club",
     port: 6430,
   },
 });

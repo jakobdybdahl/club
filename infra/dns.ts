@@ -1,5 +1,5 @@
-const PRODUCTION = "palmer.jakobdybdahl.com";
-const DEV = "dev.palmer.jakobdybdahl.com";
+const PRODUCTION = "club.jakobdybdahl.com";
+const DEV = "dev.club.jakobdybdahl.com";
 
 export const { zone, domain } = (() => {
   if ($app.stage === "production") {
@@ -9,7 +9,7 @@ export const { zone, domain } = (() => {
         { name: PRODUCTION },
         {
           retainOnDelete: true,
-          import: "Z08691642ZO6KVVYJ3A5D",
+          import: "Z0732866K2E5R11G138C",
           ignoreChanges: ["*"],
         }
       ),
@@ -24,7 +24,7 @@ export const { zone, domain } = (() => {
         { name: DEV },
         {
           retainOnDelete: true,
-          import: "Z08691642ZO6KVVYJ3A5D",
+          import: "Z0732866K2E5R11G138C",
           ignoreChanges: ["*"],
         }
       ),
@@ -33,7 +33,7 @@ export const { zone, domain } = (() => {
   }
 
   return {
-    zone: aws.route53.Zone.get("Zone", "Z08691642ZO6KVVYJ3A5D"),
+    zone: aws.route53.Zone.get("Zone", "Z0732866K2E5R11G138C"),
     domain: `${$app.stage}.${DEV}`,
   };
 })();

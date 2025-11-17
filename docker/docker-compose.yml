@@ -1,11 +1,11 @@
 services:
-  zero_template_postgres:
+  club_postgres:
     image: postgres:16.4
     shm_size: 1g
     user: postgres
     restart: always
     healthcheck:
-      test: "pg_isready -U user --dbname=zero-template"
+      test: "pg_isready -U user --dbname=club"
       interval: 10s
       timeout: 5s
       retries: 5
@@ -13,7 +13,7 @@ services:
       - 6430:5432
     environment:
       POSTGRES_USER: user
-      POSTGRES_DB: zero-template
+      POSTGRES_DB: club
       POSTGRES_PASSWORD: password
     command: |
       postgres 
@@ -23,8 +23,8 @@ services:
       -c hot_standby=on 
       -c hot_standby_feedback=on
     volumes:
-      - zero_template_pgdata:/var/lib/postgresql/data
+      - club_pgdata:/var/lib/postgresql/data
 
 volumes:
-  zero_template_pgdata:
+  club_pgdata:
     driver: local

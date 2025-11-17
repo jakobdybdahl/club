@@ -1,6 +1,8 @@
+import { Event } from "@club/core/event/index";
+import { User } from "@club/core/user/index";
+
+import { Transaction } from "@club/core/util/transaction";
 import { CustomMutatorDefs } from "@rocicorp/zero/pg";
-import { Message } from "@zero-template/core/message/index";
-import { Transaction } from "@zero-template/core/util/transaction";
 import { z } from "zod";
 
 const wrapped = <Schema extends z.ZodSchema<any, any, any>, Return extends any>(
@@ -14,9 +16,12 @@ const wrapped = <Schema extends z.ZodSchema<any, any, any>, Return extends any>(
 };
 
 export const mutators = {
-  message: {
-    create: wrapped(Message.create),
-    remove: wrapped(Message.remove),
+  user: {
+    create: wrapped(User.create),
+    remove: wrapped(User.remove),
+  },
+  event: {
+    create: wrapped(Event.create),
   },
 } satisfies CustomMutatorDefs<Transaction>;
 

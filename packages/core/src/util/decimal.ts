@@ -19,12 +19,12 @@ type ToBigNumberFn = <T extends BigNumber.Value | null>(
   n: T
 ) => T extends null ? BigNumber | null : BigNumber;
 
-type PX_BigNumber = ((n: BigNumber.Value) => BigNumber) & {
+type _BigNumber = ((n: BigNumber.Value) => BigNumber) & {
   money: ToBigNumberFn;
   quantity: ToBigNumberFn;
 };
 
-const decimal: PX_BigNumber = (n: BigNumber.Value) => BigNumber(n);
+const decimal: _BigNumber = (n: BigNumber.Value) => BigNumber(n);
 
 decimal.money = (n) =>
   n !== null

@@ -1,0 +1,11 @@
+{
+  "name": "@club/scripts",
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "@club/core": "workspace:*",
+    "@inquirer/prompts": "^7.10.1",
+    "@types/node": "catalog:",
+    "zod": "catalog:"
+  }
+}

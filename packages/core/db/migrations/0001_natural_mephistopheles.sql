@@ -1,0 +1,1 @@
+ALTER TABLE "event" ADD CONSTRAINT "event_club_id_id_pk" PRIMARY KEY("club_id","id");

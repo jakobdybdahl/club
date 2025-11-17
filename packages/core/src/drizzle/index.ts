@@ -1,13 +1,11 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import { default as pg } from "postgres";
 import { Resource } from "sst";
-import * as messageSchema from "../message/message.sql";
 
 export * from "drizzle-orm";
+export { migrate } from "drizzle-orm/postgres-js/migrator";
 
-export const schema = {
-  ...messageSchema,
-};
+export const schema = {};
 
 const pgClient = pg({
   idle_timeout: 30000,

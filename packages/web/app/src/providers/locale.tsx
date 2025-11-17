@@ -1,4 +1,5 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 type LocaleContextType = {
   locale: string;
@@ -20,7 +21,7 @@ const getPreferredLanguageSnapshot = () => {
 };
 
 function LocaleProvider({ children }: { children: React.ReactNode }) {
-  // const { i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   const locale = React.useSyncExternalStore(
     usePreferredLanguageSubscribe,
@@ -29,9 +30,9 @@ function LocaleProvider({ children }: { children: React.ReactNode }) {
 
   const code = useMemo(() => locale.split("-").at(0) ?? "en", [locale]);
 
-  // useEffect(() => {
-  //   void i18n.changeLanguage(code);
-  // }, [i18n, code]);
+  useEffect(() => {
+    void i18n.changeLanguage(code);
+  }, [i18n, code]);
 
   return (
     <LocaleContext.Provider value={{ locale, code }}>

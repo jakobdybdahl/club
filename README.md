@@ -1,1 +1,1 @@
-# Zero Template Repo
+# Club Repo

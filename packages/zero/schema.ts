@@ -1,34 +1,137 @@
 import {
+  boolean,
   createBuilder,
   createSchema,
   definePermissions,
+  enumeration,
+  json,
   number,
+  relationships,
   string,
   table,
 } from "@rocicorp/zero";
 
+import type { Actor } from "@club/core/actor";
+import type { Permission } from "@club/core/permission/index";
+
+// COMMON
 export const timestamps = {
   timeCreated: number().from("time_created"),
   timeUpdated: number().from("time_updated"),
   timeDeleted: number().from("time_deleted").optional(),
 };
 
-export const workspaceIds = {
+export const clubIds = {
   id: string(),
-  // workspaceId: string().from("workspace_id"),
+  clubId: string().from("club_id"),
 };
 
-const message = table("message")
+export const creator = {
+  creatorId: string().from("creator_id"),
+  creatorType: enumeration<Actor["type"]>().from("creator_type"),
+};
+
+export const club = table("club")
   .columns({
-    ...workspaceIds,
     ...timestamps,
-    sender: string(),
-    content: string(),
+    id: string(),
+    slug: string(),
+    oldSlug: string().from("old_slug").optional(),
+    name: string(),
+    shortCode: string().from("short_code"),
   })
   .primaryKey("id");
 
+export const user = table("user")
+  .columns({
+    ...clubIds,
+    ...timestamps,
+    ...creator,
+    username: string().optional(),
+    fullName: string().from("full_name").optional(),
+    email: string(),
+    initials: string(),
+    color: string(),
+    timeSeen: number().from("time_seen").optional(),
+  })
+  .primaryKey("id", "clubId");
+
+export const clubRelationships = relationships(club, (r) => ({
+  users: r.many({
+    sourceField: ["id"],
+    destSchema: user,
+    destField: ["clubId"],
+  }),
+}));
+
+// PERMISSION GROUP
+export const permissionGroup = table("permissionGroup")
+  .from("permission_group")
+  .columns({
+    ...clubIds,
+    ...timestamps,
+    ...creator,
+    name: string(),
+    permissions: json<Permission[]>(),
+    immutable: boolean().optional(),
+  })
+  .primaryKey("id", "clubId");
+
+export const permissionGroupMember = table("permissionGroupMember")
+  .from("permission_group_member")
+  .columns({
+    clubId: string().from("club_id"),
+    ...timestamps,
+    ...creator,
+    userId: string().from("user_id"),
+    groupId: string().from("group_id"),
+  })
+  .primaryKey("clubId", "groupId", "userId");
+
+export const permissionGroupRelationships = relationships(
+  permissionGroup,
+  (r) => ({
+    members: r.many(
+      {
+        sourceField: ["clubId", "id"],
+        destSchema: permissionGroupMember,
+        destField: ["clubId", "groupId"],
+      },
+      {
+        sourceField: ["clubId", "userId"],
+        destSchema: user,
+        destField: ["clubId", "id"],
+      }
+    ),
+  })
+);
+
+// EVENT
+export const event = table("event")
+  .columns({
+    ...clubIds,
+    ...timestamps,
+    ...creator,
+    name: string(),
+    visibility: enumeration<"public" | "private">(),
+  })
+  .primaryKey("clubId", "id");
+
+export const eventRelationships = relationships(event, (r) => ({
+  club: r.one({
+    sourceField: ["clubId"],
+    destSchema: club,
+    destField: ["id"],
+  }),
+}));
+
 export const schema = createSchema({
-  tables: [message],
+  tables: [club, user, permissionGroup, permissionGroupMember, event],
+  relationships: [
+    clubRelationships,
+    permissionGroupRelationships,
+    eventRelationships,
+  ],
   enableLegacyMutators: false,
   enableLegacyQueries: false,
 });

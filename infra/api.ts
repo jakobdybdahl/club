@@ -1,17 +1,21 @@
+import { auth } from "./auth";
+import { bus } from "./bus";
 import { database } from "./database";
 import { domain } from "./dns";
+import { email } from "./email";
 import { vpc } from "./network";
+import { storage } from "./storage";
 
 const router = new sst.aws.Router("ApiRouter", {
   domain: "api." + domain,
 });
 
 export const api = new sst.aws.Function("Api", {
-  handler: "packages/backend/src/functions/api.handler",
+  handler: "packages/backend/src/function/api.handler",
   timeout: "3 minutes",
   permissions: [{ actions: ["ses:*", "ssm:*"], resources: ["*"] }],
   vpc,
-  link: [database],
+  link: [auth, database, email, bus, storage],
   url: {
     route: {
       router,

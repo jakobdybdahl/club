@@ -1,26 +1,31 @@
+import { type Schema, schema } from "@club/zero/schema";
 import { Zero } from "@rocicorp/zero";
 import {
   ZeroProvider as BaseZeroProvider,
   createUseZero,
 } from "@rocicorp/zero/react";
-import { type Schema, schema } from "@zero-template/zero/schema";
 import { useEffect, useState } from "react";
-import { mutators } from "./mutators";
+import { useAuth } from "../auth";
+import { createMutators } from "./mutators";
 
 export const ZeroProvider = ({ children }: { children: React.ReactNode }) => {
+  const auth = useAuth();
   const [z, setZ] = useState<Zero<Schema> | null>(null);
 
   useEffect(() => {
     console.log("setting zero");
+    const userId = auth.subject?.id ?? "anon";
+    if (z?.userID === userId) return;
     setZ(
       new Zero({
         schema: schema,
-        userID: "anon",
+        auth: () => auth.access(),
+        userID: userId,
         server: import.meta.env.VITE_ZERO_URL,
-        mutators,
+        mutators: createMutators(),
       })
     );
-  }, []);
+  }, [auth.subject?.id]);
 
   useEffect(() => {
     return () => {
@@ -31,4 +36,7 @@ export const ZeroProvider = ({ children }: { children: React.ReactNode }) => {
   return z && <BaseZeroProvider zero={z}>{children}</BaseZeroProvider>;
 };
 
-export const useZero = createUseZero<Schema, typeof mutators>();
+export const useZero = createUseZero<
+  Schema,
+  ReturnType<typeof createMutators>
+>();

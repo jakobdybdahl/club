@@ -7,7 +7,7 @@
     <title>App</title>
     <script>
       const setTheme = (theme) => {
-        fromStorage = localStorage.getItem("px.theme");
+        fromStorage = localStorage.getItem("app.theme");
         if (fromStorage) {
           theme = JSON.parse(fromStorage).state.theme;
         } else {

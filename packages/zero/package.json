@@ -1,13 +1,15 @@
 {
-  "name": "@zero-template/zero",
+  "name": "@club/zero",
   "version": "0.0.0",
   "type": "module",
   "dependencies": {
     "@rocicorp/zero": "catalog:",
     "zod": "catalog:"
   },
+  "devDependencies": {
+    "@club/core": "workspace:*"
+  },
   "scripts": {
-    "gen:permissions": "zero-deploy-permissions -p ./schema.ts --output-format=sql --output-file=.permissions.sql",
     "dev": "zero-deploy-permissions && zero-cache"
   }
 }

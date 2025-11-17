@@ -3,34 +3,27 @@ import { createContext } from "./context";
 import { PermissionSchema } from "./permission";
 import { KebabCase } from "./util/types";
 
-export const ACTOR_TYPES = [
-  "public",
-  "account",
-  "user",
-  "system",
-  "sysadmin",
-] as const;
+export const ACTOR_TYPES = ["public", "account", "user", "system"] as const;
 
 const ActorType: {
   [Type in (typeof ACTOR_TYPES)[number] as KebabCase<Type>]: Type;
 } = {
   Account: "account",
   Public: "public",
-  Sysadmin: "sysadmin",
   System: "system",
   User: "user",
 } as const;
 
 export const PublicActor = z.object({
   type: z.literal(ActorType.Public),
-  properties: z.object({}),
+  // properties: z.object({}),
 });
 export type PublicActor = z.infer<typeof PublicActor>;
 
 export const AccountActor = z.object({
   type: z.literal(ActorType.Account),
   properties: z.object({
-    accountId: z.string().nanoid(),
+    accountId: z.nanoid(),
     email: z.string().nonempty(),
   }),
 });
@@ -39,8 +32,8 @@ export type AccountActor = z.infer<typeof AccountActor>;
 export const UserActor = z.object({
   type: z.literal(ActorType.User),
   properties: z.object({
-    userId: z.string().nanoid(),
-    workspaceId: z.string().nanoid(),
+    userId: z.nanoid(),
+    clubId: z.nanoid(),
     permissions: z.array(PermissionSchema),
   }),
 });
@@ -49,26 +42,16 @@ export type UserActor = z.infer<typeof UserActor>;
 export const SystemActor = z.object({
   type: z.literal(ActorType.System),
   properties: z.object({
-    workspaceId: z.string().nanoid(),
+    clubId: z.nanoid(),
   }),
 });
 export type SystemActor = z.infer<typeof SystemActor>;
-
-export const SysadminActor = z.object({
-  type: z.literal(ActorType.Sysadmin),
-  properties: z.object({
-    accountId: z.string().nanoid(),
-    workspaceId: z.string().nanoid(),
-  }),
-});
-export type SysadminActor = z.infer<typeof SysadminActor>;
 
 export const Actor = z.discriminatedUnion("type", [
   PublicActor,
   AccountActor,
   UserActor,
   SystemActor,
-  SysadminActor,
 ]);
 export type Actor = z.infer<typeof Actor>;
 
@@ -88,7 +71,9 @@ export function assertActor<T extends Actor["type"]>(type: T) {
 
 export function useWorkspace() {
   const actor = useActor();
-  if ("workspaceId" in actor.properties) return actor.properties.workspaceId;
+  if (actor.type !== "public" && "clubId" in actor.properties) {
+    return actor.properties.clubId;
+  }
   throw new Error(`Expected actor to have workspace ID`);
 }
 
@@ -96,7 +81,6 @@ export const useActorId = () => {
   const actor = useActor();
   switch (actor.type) {
     case "account":
-    case "sysadmin":
       return actor.properties.accountId;
     case "public":
     case "system":

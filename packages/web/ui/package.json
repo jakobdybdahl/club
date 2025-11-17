@@ -1,5 +1,5 @@
 {
-  "name": "@zero-template/ui",
+  "name": "@club/ui",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,6 +13,7 @@
     "@radix-ui/react-slot": "^1.2.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "2.1.1",
+    "input-otp": "^1.4.2",
     "lucide-react": "0.503.0",
     "react": "catalog:",
     "react-dom": "catalog:",

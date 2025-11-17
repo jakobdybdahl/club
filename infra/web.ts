@@ -1,8 +1,9 @@
 import { api } from "./api";
+import { auth } from "./auth";
 import { domain } from "./dns";
 import { zero } from "./zero";
 
-const appDomain = "chat." + domain;
+const appDomain = "app." + domain;
 
 export const web = new sst.aws.StaticSite("WebApp", {
   path: "packages/web/app",
@@ -14,6 +15,7 @@ export const web = new sst.aws.StaticSite("WebApp", {
     name: appDomain,
   },
   environment: {
+    VITE_AUTH_URL: auth.url,
     VITE_API_URL: api.url,
     VITE_ZERO_URL: zero.url,
     VITE_DOMAIN: appDomain,
