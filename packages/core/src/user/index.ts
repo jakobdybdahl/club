@@ -1,29 +1,29 @@
 export * as User from "./";
 
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
+import { InviteEmail } from "@club/mail/emails/templates/invite";
+import { and, eq, isNull } from "drizzle-orm";
 import { createSelectSchema } from "drizzle-zod";
+import { render } from "jsx-email";
 import { nanoid } from "nanoid";
 import { Resource } from "sst";
 import { z } from "zod";
 import { useActor, useActorId, useWorkspace } from "../actor";
 import { bus } from "../bus";
+import { db } from "../drizzle";
 import { createEvent } from "../event";
 import { Permission } from "../permission";
-import { PermissionGroup } from "../permission/group";
 import {
   permissionGroup,
   permissionGroupMember,
 } from "../permission/permission.sql";
-import { hasPermission, withPermission } from "../util/auth";
+import { withPermission } from "../util/auth";
 import { colors } from "../util/color";
-import { ForbiddenError } from "../util/error";
-import {
-  createTransaction,
-  createTransactionEffect,
-  useTransaction,
-} from "../util/transaction";
+import { createTransactionEffect, useTransaction } from "../util/transaction";
 import { zod } from "../util/zod";
 import { user } from "./user.sql";
+
+const ses = new SESv2Client({});
 
 export const Events = {
   UserCreated: createEvent(
@@ -87,7 +87,7 @@ export const CreateInput = Info.pick({
   timeCreated: true,
   timeUpdated: true,
 })
-  .partial({ id: true })
+  .partial({ id: true, timeCreated: true, timeUpdated: true })
   .extend({ first: z.boolean().optional() });
 
 export type CreateInput = z.infer<typeof CreateInput>;
@@ -101,6 +101,17 @@ export const create = withPermission(
         .substring(0, 2)
         .padEnd(2, "P")
         .toUpperCase();
+
+      const existing = await tx.query.user.findFirst({
+        where: and(
+          eq(user.email, input.email),
+          eq(user.clubId, useWorkspace())
+        ),
+      });
+
+      if (existing?.timeDeleted === null) {
+        throw new Error("User already exists");
+      }
 
       await tx
         .insert(user)
@@ -139,38 +150,6 @@ export const create = withPermission(
   )
 );
 
-export const remove = zod(Info.shape.id, (id) => {
-  const actor = useActor();
-  const isSelf = actor.type === "user" && actor.properties.userId === id;
-
-  const canRemove = isSelf || hasPermission("delete:user");
-
-  if (!canRemove) {
-    throw new ForbiddenError();
-  }
-
-  return createTransaction(async (tx) => {
-    await PermissionGroup.unassignUser({ userId: id });
-
-    const u = await tx
-      .update(user)
-      .set({ timeUpdated: sql`now()`, timeDeleted: sql`now()` })
-      .where(
-        and(
-          eq(user.id, id),
-          eq(user.clubId, useWorkspace()),
-          isNull(user.timeDeleted)
-        )
-      )
-      .returning()
-      .then((rows) => rows[0]);
-
-    if (!u) return;
-
-    return u.id;
-  });
-});
-
 export const UpdateInput = Info.pick({
   id: true,
   color: true,
@@ -181,51 +160,54 @@ export const UpdateInput = Info.pick({
 
 export type UpdateInput = z.infer<typeof UpdateInput>;
 
-export const update = zod(UpdateInput, (input) => {
-  return useTransaction(async (tx) => {
-    const u = await tx
-      .select()
-      .from(user)
-      .where(
-        and(
-          eq(user.id, input.id),
-          eq(user.clubId, useWorkspace()),
-          isNull(user.timeDeleted)
-        )
-      )
-      .then((rows) => rows[0]);
-
-    if (!u) return;
-
-    // auth
-    const actor = useActor();
-    const isAllowed =
-      (actor.type === "user" && actor.properties.userId === u.id) ||
-      hasPermission("update:user");
-
-    if (!isAllowed) {
-      throw new ForbiddenError();
-    }
-
-    const updatedUser = await tx
-      .update(user)
-      .set({
-        color: input.color,
-        initials: input.initials,
-        fullName: input.fullName,
-        username: input.username,
-        timeUpdated: sql`now()`,
-      })
-      .where(
-        and(
-          eq(user.id, input.id),
-          eq(user.clubId, useWorkspace()),
-          isNull(user.timeDeleted)
-        )
-      )
-      .returning()
-      .then((rows) => rows[0]);
-
-    return updatedUser;
+export const sendEmailInvite = zod(Info.pick({ id: true }), async ({ id }) => {
+  // const actor = useActor();
+  // if (actor.type !== "user") return;
+  // user created by another user -> send invite
+  const data = await db.query.user.findFirst({
+    where: (table, { eq }) => eq(table.id, id),
+    with: { club: true },
   });
+  if (!data) return;
+  const subject = `Join ${data.club.name}`;
+  const html = await render(
+    InviteEmail({
+      appUrl: Resource.WebApp.url,
+      club: {
+        name: data.club.name,
+        slug: data.club.slug,
+      },
+      assetsUrl: process.env.SST_DEV
+        ? undefined
+        : `${Resource.WebApp.url}/email`,
+    })
+  );
+  try {
+    await ses.send(
+      new SendEmailCommand({
+        Destination: {
+          ToAddresses: [data.email],
+        },
+        ReplyToAddresses: [`invite@${Resource.Email.sender}`],
+        FromEmailAddress: `Club <invite@${Resource.Email.sender}>`,
+        Content: {
+          Simple: {
+            Body: {
+              Html: {
+                Data: html,
+              },
+              Text: {
+                Data: html,
+              },
+            },
+            Subject: {
+              Data: subject,
+            },
+          },
+        },
+      })
+    );
+  } catch (ex) {
+    console.error(ex);
+  }
 });

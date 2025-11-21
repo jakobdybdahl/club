@@ -36,8 +36,6 @@ export const create = zod(
         creatorType: useActor().type,
         name: input.name,
         visibility: input.visibility ?? "private",
-        timeCreated: Date.now(),
-        timeUpdated: Date.now(),
       });
     });
   }

@@ -29,7 +29,7 @@ export const queries = {
     (actor: AuthContext, args) => {
       let q = builder.event.where("clubId", args.clubId);
       if (actor.type === "public" || actor.type === "account") {
-        q = builder.event.where("visibility", "=", "public");
+        q = q.where("visibility", "=", "public");
       }
       return q.related("club").limit(20);
     }
@@ -38,10 +38,16 @@ export const queries = {
     "event",
     z.tuple([z.object({ id: z.string() })]),
     (actor: AuthContext, { id }) => {
-      let q = builder.event.where("id", id);
-      if (actor.type === "public" || actor.type === "account") {
-        q = builder.event.where("visibility", "=", "public");
-      }
+      let q = builder.event
+        .where("id", id)
+        .where(({ or, cmp, exists }) =>
+          or(
+            cmp("visibility", "=", "public"),
+            actor.type === "account"
+              ? exists("users", (q) => q.where("email", actor.properties.email))
+              : undefined
+          )
+        );
       return q.related("club").one();
     }
   ),
@@ -54,7 +60,8 @@ export const queries = {
       }
       return builder.club
         .where("timeDeleted", "IS", null)
-        .whereExists("users", (q) => q.where("email", actor.properties.email));
+        .whereExists("users", (q) => q.where("email", actor.properties.email))
+        .related("users");
     }
   ),
   club: syncedQueryWithContext(
@@ -65,6 +72,7 @@ export const queries = {
         .where("slug", args.slug)
         .where("timeDeleted", "IS", null)
         .related("users")
+        .related("events", (q) => q.where("timeDeleted", "IS", null))
         .one();
     }
   ),

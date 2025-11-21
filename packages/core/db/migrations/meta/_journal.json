@@ -15,6 +15,13 @@
       "when": 1763292108465,
       "tag": "0001_natural_mephistopheles",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763373330211,
+      "tag": "0002_worthless_abomination",
+      "breakpoints": true
     }
   ]
 }

@@ -9,7 +9,7 @@ export type MutatorTx = Transaction<typeof schema>;
 type Populated<T extends { timeCreated?: number; timeUpdated?: number }> =
   WithRequired<T, "timeCreated" | "timeUpdated"> & {
     clubId: string;
-    userId: string;
+    actorId: string;
   };
 
 type Create<T extends { timeCreated?: number; timeUpdated?: number }> =
@@ -27,7 +27,7 @@ export function createMutators() {
           color: "",
           initials: "",
           clubId: input.clubId,
-          creatorId: input.userId,
+          creatorId: input.actorId,
           creatorType: "user",
         });
       },
@@ -37,7 +37,7 @@ export function createMutators() {
         await tx.mutate.event.insert({
           id: input.id,
           clubId: input.clubId,
-          creatorId: input.userId,
+          creatorId: input.actorId,
           creatorType: "user",
           name: input.name,
           visibility: input.visibility ?? "private",

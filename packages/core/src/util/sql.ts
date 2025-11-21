@@ -34,14 +34,14 @@ export const clubIndexes = (table: any) => [
   primaryKey({ columns: [table.clubId, table.id] }),
 ];
 
-export const timestamp = (name: string) =>
-  doublePrecision(name).default(
-    sql`(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)`
-  );
+export const sqlNow = () =>
+  sql`(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)`;
+
+export const timestamp = (name: string) => doublePrecision(name);
 
 export const timestamps = {
-  timeCreated: timestamp("time_created").notNull(),
-  timeUpdated: timestamp("time_updated").notNull(),
+  timeCreated: timestamp("time_created").default(sqlNow()).notNull(),
+  timeUpdated: timestamp("time_updated").default(sqlNow()).notNull(),
   timeDeleted: timestamp("time_deleted"),
 };
 

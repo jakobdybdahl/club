@@ -6,21 +6,27 @@ import React from "react";
 
 type ClubContextType = Club.Info & { users: readonly User.Info[] };
 
-export const ClubContext = React.createContext<ClubContextType>(
-  {} as ClubContextType
-);
+export const ClubContext = React.createContext<ClubContextType | null>(null);
 
-export const useClub = (opts: { safe?: boolean } = { safe: true }) => {
+type UseClubReturn = ClubContextType & { user?: User.Info };
+
+export function useClub(): UseClubReturn;
+export function useClub(opts: { safe: true }): UseClubReturn;
+export function useClub(opts?: { safe?: false }): UseClubReturn | undefined;
+export function useClub(
+  opts: {
+    safe?: boolean;
+  } = { safe: true }
+): UseClubReturn | undefined {
   const { current: account } = useAccount();
   const context = React.useContext(ClubContext);
-  if (!context && opts.safe) throw new Error("No workspace context");
-
+  if (!context && opts.safe) throw new Error("No club context");
+  if (!context) return;
   const user = account
     ? context?.users.find((u) => u.email === account.email)
     : undefined;
-
   return { ...context, user };
-};
+}
 
 export const useUser = () => {
   const { user } = useClub();

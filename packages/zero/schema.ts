@@ -56,14 +56,6 @@ export const user = table("user")
   })
   .primaryKey("id", "clubId");
 
-export const clubRelationships = relationships(club, (r) => ({
-  users: r.many({
-    sourceField: ["id"],
-    destSchema: user,
-    destField: ["clubId"],
-  }),
-}));
-
 // PERMISSION GROUP
 export const permissionGroup = table("permissionGroup")
   .from("permission_group")
@@ -88,6 +80,44 @@ export const permissionGroupMember = table("permissionGroupMember")
   })
   .primaryKey("clubId", "groupId", "userId");
 
+// EVENT
+export const event = table("event")
+  .columns({
+    ...clubIds,
+    ...timestamps,
+    ...creator,
+    name: string(),
+    visibility: enumeration<"public" | "private">(),
+  })
+  .primaryKey("clubId", "id");
+
+// RELATIONSHIPS
+export const eventRelationships = relationships(event, (r) => ({
+  club: r.one({
+    sourceField: ["clubId"],
+    destSchema: club,
+    destField: ["id"],
+  }),
+  users: r.many({
+    sourceField: ["clubId"],
+    destSchema: user,
+    destField: ["clubId"],
+  }),
+}));
+
+export const clubRelationships = relationships(club, (r) => ({
+  users: r.many({
+    sourceField: ["id"],
+    destSchema: user,
+    destField: ["clubId"],
+  }),
+  events: r.many({
+    sourceField: ["id"],
+    destSchema: event,
+    destField: ["clubId"],
+  }),
+}));
+
 export const permissionGroupRelationships = relationships(
   permissionGroup,
   (r) => ({
@@ -105,25 +135,6 @@ export const permissionGroupRelationships = relationships(
     ),
   })
 );
-
-// EVENT
-export const event = table("event")
-  .columns({
-    ...clubIds,
-    ...timestamps,
-    ...creator,
-    name: string(),
-    visibility: enumeration<"public" | "private">(),
-  })
-  .primaryKey("clubId", "id");
-
-export const eventRelationships = relationships(event, (r) => ({
-  club: r.one({
-    sourceField: ["clubId"],
-    destSchema: club,
-    destField: ["id"],
-  }),
-}));
 
 export const schema = createSchema({
   tables: [club, user, permissionGroup, permissionGroupMember, event],

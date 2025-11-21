@@ -3,6 +3,9 @@ import { withActor } from "@club/core/actor";
 import { club } from "@club/core/club/club.sql";
 import { Club } from "@club/core/club/index";
 import { db, eq } from "@club/core/drizzle/index";
+import { PermissionGroup } from "@club/core/permission/group";
+import { User } from "@club/core/user/index";
+import { createTransaction } from "@club/core/util/transaction";
 import { input } from "@inquirer/prompts";
 import z from "zod";
 
@@ -43,8 +46,26 @@ const c = await (async () => {
       properties: { accountId: account.id, email: account.email },
     },
     async () => {
-      const id = await Club.create({ name });
-      return (await Club.fromId(id))!;
+      return createTransaction(async () => {
+        const clubId = await Club.create({ name });
+        const club = await Club.fromId(clubId);
+        if (!club) throw new Error("Newly created club was not found");
+        await withActor(
+          { type: "system", properties: { clubId } },
+          async () => {
+            const userId = await User.create({
+              email: account.email,
+            });
+            const groupId = await PermissionGroup.create({
+              name: "Admin",
+              permissions: ["admin"],
+              immutable: true,
+            });
+            await PermissionGroup.assign({ id: groupId, userId });
+          }
+        );
+        return club;
+      });
     }
   );
 })();

@@ -44,7 +44,7 @@ export const create = zod(
   (input) =>
     useTransaction(async (tx) => {
       const id = input.id ?? nanoid();
-      const slug = input.name.toLowerCase().replace(" ", "-");
+      const slug = input.name.toLowerCase().replace(/ /g, "-");
       const shortCode = slug.slice(0, 2).toUpperCase();
 
       const result = await tx

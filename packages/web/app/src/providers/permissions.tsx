@@ -4,7 +4,7 @@ import { NotAllowed } from "@/features/error-pages";
 import type { Permission } from "@club/core/permission/index";
 import { queries } from "@club/zero/queries";
 import { useQuery } from "@rocicorp/zero/react";
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useEffect, useMemo } from "react";
 
 type PermissionContextType = {
   permissions: Permission[];
@@ -17,16 +17,21 @@ const PermissionContext = React.createContext<PermissionContextType>({
 const PermissionProvider = ({ children }: { children: React.ReactNode }) => {
   const { id: clubId, user } = useClub();
 
-  const [groups, groupsResult] = useQuery(
+  const [groups] = useQuery(
     queries.permissionGroups(
       user
         ? {
             type: "user",
-            properties: { clubId, userId: user.id, permissions: [] },
+            properties: {
+              clubId: clubId,
+              userId: user.id,
+              permissions: [],
+            },
           }
         : { type: "public" },
       { clubId }
-    )
+    ),
+    { enabled: !!user }
   );
 
   const permissions = useMemo(() => {
@@ -36,12 +41,12 @@ const PermissionProvider = ({ children }: { children: React.ReactNode }) => {
     );
   }, [groups]);
 
+  useEffect(() => console.log({ permissions }), [permissions]);
+
   return (
-    groupsResult.type === "complete" && (
-      <PermissionContext.Provider value={{ permissions }}>
-        {children}
-      </PermissionContext.Provider>
-    )
+    <PermissionContext.Provider value={{ permissions }}>
+      {children}
+    </PermissionContext.Provider>
   );
 };
 

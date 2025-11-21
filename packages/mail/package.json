@@ -6,7 +6,7 @@
     "dev": "email preview emails/templates"
   },
   "dependencies": {
-    "jsx-email": "^2.8.1",
+    "jsx-email": "2.8.1",
     "react": "catalog:",
     "@types/react": "catalog:"
   }

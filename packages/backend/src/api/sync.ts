@@ -9,14 +9,20 @@ import { handleGetQueriesRequest } from "@rocicorp/zero/server";
 import { Hono } from "hono";
 import z from "zod";
 import { mutators, processor } from "../zero";
+import { withAuthContext } from "../zero/mutators";
 
 export const ZeroRoute = new Hono()
   .post("/mutate", async (c) => {
     const body = await c.req.json();
     console.log(JSON.stringify(body, null, 2));
-    const response = await processor.process(mutators, c.req.query(), body);
-    console.log(JSON.stringify(response, null, 2));
-    return c.json(response);
+    return withAuthContext(
+      { actor: useActor(), requests: new Map() },
+      async () => {
+        const response = await processor.process(mutators, c.req.query(), body);
+        console.log(JSON.stringify(response, null, 2));
+        return c.json(response);
+      }
+    );
   })
   .post("/get-queries", async (c) => {
     const actor = useActor();
@@ -109,7 +115,7 @@ export const ZeroRoute = new Hono()
       c.req.raw
     );
 
-    console.log(JSON.stringify(res, null, 2));
+    // console.log(JSON.stringify(res, null, 2));
 
     return c.json<any>(res);
   });

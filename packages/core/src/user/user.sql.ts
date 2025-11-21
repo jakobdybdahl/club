@@ -1,4 +1,6 @@
+import { relations } from "drizzle-orm";
 import { index, pgTable, uniqueIndex, varchar } from "drizzle-orm/pg-core";
+import { club } from "../club/club.sql";
 import {
   clubId,
   clubIndexes,
@@ -26,3 +28,10 @@ export const user = pgTable(
     index("email_global").on(table.email),
   ]
 );
+
+export const userRelations = relations(user, ({ one }) => ({
+  club: one(club, {
+    fields: [user.clubId],
+    references: [club.id],
+  }),
+}));
