@@ -6,6 +6,7 @@
     "@club/core": "workspace:*",
     "@inquirer/prompts": "^7.10.1",
     "@types/node": "catalog:",
+    "nanoid": "catalog:",
     "zod": "catalog:"
   }
 }

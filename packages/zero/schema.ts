@@ -91,6 +91,41 @@ export const event = table("event")
   })
   .primaryKey("clubId", "id");
 
+// CMS
+export const page = table("page")
+  .from("cms_page")
+  .columns({
+    ...clubIds,
+    ...timestamps,
+    ...creator,
+    title: string(),
+    visibility: enumeration<"public" | "private">(),
+    slug: string(),
+    body: json(),
+    parentId: string().from("parent_id").optional(),
+  })
+  .primaryKey("clubId", "id");
+
+export const menu = table("menu")
+  .from("cms_menu")
+  .columns({
+    clubId: clubIds.clubId,
+    config: json(),
+    timeUpdated: timestamps.timeUpdated,
+  })
+  .primaryKey("clubId");
+
+export const customDomain = table("customDomain")
+  .from("cms_custom_domain")
+  .columns({
+    ...creator,
+    clubId: clubIds.clubId,
+    timeCreated: timestamps.timeCreated,
+    timeUpdated: timestamps.timeUpdated,
+    domain: string(),
+  })
+  .primaryKey("clubId");
+
 // RELATIONSHIPS
 export const eventRelationships = relationships(event, (r) => ({
   club: r.one({
@@ -116,6 +151,21 @@ export const clubRelationships = relationships(club, (r) => ({
     destSchema: event,
     destField: ["clubId"],
   }),
+  menu: r.one({
+    sourceField: ["id"],
+    destSchema: menu,
+    destField: ["clubId"],
+  }),
+  pages: r.many({
+    sourceField: ["id"],
+    destSchema: page,
+    destField: ["clubId"],
+  }),
+  customDomain: r.one({
+    sourceField: ["id"],
+    destSchema: customDomain,
+    destField: ["clubId"],
+  }),
 }));
 
 export const permissionGroupRelationships = relationships(
@@ -137,7 +187,16 @@ export const permissionGroupRelationships = relationships(
 );
 
 export const schema = createSchema({
-  tables: [club, user, permissionGroup, permissionGroupMember, event],
+  tables: [
+    club,
+    user,
+    permissionGroup,
+    permissionGroupMember,
+    event,
+    page,
+    customDomain,
+    menu,
+  ],
   relationships: [
     clubRelationships,
     permissionGroupRelationships,

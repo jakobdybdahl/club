@@ -23,6 +23,27 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Bus"
     }
+    "Cdn": {
+      "prefixes": {
+        "public": string
+        "restricted": string
+      }
+      "publicKeyId": string
+      "type": "sst.sst.Linkable"
+      "url": string
+    }
+    "CdnPrivateKey": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "CdnPublicKey": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "CdnRouter": {
+      "type": "sst.aws.Router"
+      "url": string
+    }
     "Database": {
       "database": string
       "host": string
@@ -49,11 +70,6 @@ declare module "sst" {
       "url": string
     }
     "Zero": {
-      "service": string
-      "type": "sst.aws.Service"
-      "url": string
-    }
-    "ZeroReplication": {
       "service": string
       "type": "sst.aws.Service"
       "url": string

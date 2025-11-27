@@ -1,5 +1,6 @@
 import { Actor, UserActor, withActor } from "@club/core/actor";
 import { Club } from "@club/core/club/index";
+import { Page } from "@club/core/cms/index";
 import { createContext } from "@club/core/context";
 import { Event } from "@club/core/event/index";
 import { User } from "@club/core/user/index";
@@ -101,10 +102,13 @@ const wrapped = <Schema extends z.ZodSchema<any, any, any>, Return extends any>(
 export const mutators = {
   user: {
     create: wrapped(User.create),
-    remove: wrapped(User.remove),
   },
   event: {
     create: wrapped(Event.create),
+  },
+  page: {
+    create: wrapped(Page.create),
+    update: wrapped(Page.update),
   },
 } satisfies CustomMutatorDefs<Transaction>;
 

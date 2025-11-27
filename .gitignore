@@ -2,3 +2,4 @@ node_modules
 .sst
 .env
 *.DS_Store
+*.pem

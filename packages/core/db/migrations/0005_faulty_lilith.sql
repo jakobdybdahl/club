@@ -1,0 +1,1 @@
+ALTER TABLE "custom-domain" RENAME TO "cms_custom_domain";

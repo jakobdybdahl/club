@@ -76,4 +76,50 @@ export const queries = {
         .one();
     }
   ),
+  cmsByDomain: syncedQueryWithContext(
+    "cmsByDomain",
+    z.tuple([z.object({ domain: z.string().trim().nonempty() })]),
+    (actor: AuthContext, args) => {
+      return builder.club
+        .whereExists("customDomain", (q) => q.where("domain", args.domain))
+        .related("menu")
+        .related("pages")
+        .one();
+    }
+  ),
+  cmsBySlug: syncedQueryWithContext(
+    "cmsBySlug",
+    z.tuple([z.object({ slug: z.string().trim().nonempty() })]),
+    (actor: AuthContext, args) => {
+      return builder.club
+        .where("slug", args.slug)
+        .related("menu")
+        .related("pages")
+        .one();
+    }
+  ),
+  pages: syncedQueryWithContext(
+    "pages",
+    z.tuple([clubSchema]),
+    (actor: AuthContext, args) => {
+      let q = builder.page.where("clubId", args.clubId);
+      if (actor.type !== "user") {
+        q = q.where("visibility", "=", "public");
+      }
+      return q;
+    }
+  ),
+  page: syncedQueryWithContext(
+    "page",
+    z.tuple([clubSchema.extend({ pageSlug: z.string() })]),
+    (actor: AuthContext, args) => {
+      let q = builder.page
+        .where("clubId", args.clubId)
+        .where("slug", args.pageSlug);
+      if (actor.type !== "user") {
+        q = q.where("visibility", "=", "public");
+      }
+      return q.one();
+    }
+  ),
 };

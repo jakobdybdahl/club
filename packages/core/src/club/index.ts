@@ -10,6 +10,7 @@ import { bus } from "../bus";
 import { createEvent } from "../event";
 import { withPermission } from "../util/auth";
 import { VisibleError } from "../util/error";
+import { toSlug } from "../util/slug";
 import { createTransactionEffect, useTransaction } from "../util/transaction";
 import { zod } from "../util/zod";
 import { club } from "./club.sql";
@@ -44,7 +45,7 @@ export const create = zod(
   (input) =>
     useTransaction(async (tx) => {
       const id = input.id ?? nanoid();
-      const slug = input.name.toLowerCase().replace(/ /g, "-");
+      const slug = toSlug(input.name);
       const shortCode = slug.slice(0, 2).toUpperCase();
 
       const result = await tx

@@ -1,0 +1,942 @@
+{
+  "id": "78540257-8136-4047-a8e7-fd2d33ed4e9d",
+  "prevId": "40e06547-7922-4e93-a43c-3915875cebc6",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.account": {
+      "name": "account",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "char(21)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "time_created": {
+          "name": "time_created",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_updated": {
+          "name": "time_updated",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_deleted": {
+          "name": "time_deleted",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "email": {
+          "name": "email",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.club": {
+      "name": "club",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "char(21)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "time_created": {
+          "name": "time_created",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_updated": {
+          "name": "time_updated",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_deleted": {
+          "name": "time_deleted",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "short_code": {
+          "name": "short_code",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "old_slug": {
+          "name": "old_slug",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "slug": {
+          "name": "slug",
+          "columns": [
+            {
+              "expression": "slug",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cms_menu": {
+      "name": "cms_menu",
+      "schema": "",
+      "columns": {
+        "club_id": {
+          "name": "club_id",
+          "type": "char(21)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "time_updated": {
+          "name": "time_updated",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "config": {
+          "name": "config",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cms_page": {
+      "name": "cms_page",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "club_id": {
+          "name": "club_id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_created": {
+          "name": "time_created",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_updated": {
+          "name": "time_updated",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_deleted": {
+          "name": "time_deleted",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator_type": {
+          "name": "creator_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body": {
+          "name": "body",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "page_parent_fk": {
+          "name": "page_parent_fk",
+          "tableFrom": "cms_page",
+          "tableTo": "cms_page",
+          "columnsFrom": [
+            "club_id",
+            "parent_id"
+          ],
+          "columnsTo": [
+            "club_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "cms_page_club_id_id_pk": {
+          "name": "cms_page_club_id_id_pk",
+          "columns": [
+            "club_id",
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "page_slug_unique": {
+          "name": "page_slug_unique",
+          "nullsNotDistinct": true,
+          "columns": [
+            "club_id",
+            "parent_id",
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cms_custom_domain": {
+      "name": "cms_custom_domain",
+      "schema": "",
+      "columns": {
+        "creator_id": {
+          "name": "creator_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator_type": {
+          "name": "creator_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_created": {
+          "name": "time_created",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_updated": {
+          "name": "time_updated",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "club_id": {
+          "name": "club_id",
+          "type": "char(21)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "domain": {
+          "name": "domain",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "domain_unique_idx": {
+          "name": "domain_unique_idx",
+          "columns": [
+            {
+              "expression": "domain",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.event": {
+      "name": "event",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "club_id": {
+          "name": "club_id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_created": {
+          "name": "time_created",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_updated": {
+          "name": "time_updated",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_deleted": {
+          "name": "time_deleted",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator_type": {
+          "name": "creator_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "event_club_id_id_pk": {
+          "name": "event_club_id_id_pk",
+          "columns": [
+            "club_id",
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.file": {
+      "name": "file",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "club_id": {
+          "name": "club_id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator_type": {
+          "name": "creator_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_created": {
+          "name": "time_created",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_updated": {
+          "name": "time_updated",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "size": {
+          "name": "size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "state": {
+          "name": "state",
+          "type": "file_upload_state",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending-upload'"
+        },
+        "subject_id": {
+          "name": "subject_id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subject_type": {
+          "name": "subject_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "subject_idx": {
+          "name": "subject_idx",
+          "columns": [
+            {
+              "expression": "club_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "subject_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "file_club_id_id_pk": {
+          "name": "file_club_id_id_pk",
+          "columns": [
+            "club_id",
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.permission_group": {
+      "name": "permission_group",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "club_id": {
+          "name": "club_id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_created": {
+          "name": "time_created",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_updated": {
+          "name": "time_updated",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_deleted": {
+          "name": "time_deleted",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator_type": {
+          "name": "creator_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "permissions": {
+          "name": "permissions",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::json"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "old_name": {
+          "name": "old_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "immutable": {
+          "name": "immutable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "permission_group_club_id_id_pk": {
+          "name": "permission_group_club_id_id_pk",
+          "columns": [
+            "club_id",
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "unique_name": {
+          "name": "unique_name",
+          "nullsNotDistinct": false,
+          "columns": [
+            "club_id",
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.permission_group_member": {
+      "name": "permission_group_member",
+      "schema": "",
+      "columns": {
+        "club_id": {
+          "name": "club_id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_created": {
+          "name": "time_created",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_updated": {
+          "name": "time_updated",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_deleted": {
+          "name": "time_deleted",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator_type": {
+          "name": "creator_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "group_id": {
+          "name": "group_id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_fk": {
+          "name": "user_fk",
+          "tableFrom": "permission_group_member",
+          "tableTo": "user",
+          "columnsFrom": [
+            "club_id",
+            "user_id"
+          ],
+          "columnsTo": [
+            "club_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "permission_group_fk": {
+          "name": "permission_group_fk",
+          "tableFrom": "permission_group_member",
+          "tableTo": "permission_group",
+          "columnsFrom": [
+            "club_id",
+            "group_id"
+          ],
+          "columnsTo": [
+            "club_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "permission_group_member_club_id_group_id_user_id_pk": {
+          "name": "permission_group_member_club_id_group_id_user_id_pk",
+          "columns": [
+            "club_id",
+            "group_id",
+            "user_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user": {
+      "name": "user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "club_id": {
+          "name": "club_id",
+          "type": "char(21)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_created": {
+          "name": "time_created",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_updated": {
+          "name": "time_updated",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "(EXTRACT(epoch FROM CURRENT_TIMESTAMP) * (1000)::numeric)"
+        },
+        "time_deleted": {
+          "name": "time_deleted",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator_type": {
+          "name": "creator_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "full_name": {
+          "name": "full_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "username": {
+          "name": "username",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "initials": {
+          "name": "initials",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "color": {
+          "name": "color",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_seen": {
+          "name": "time_seen",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "user_email": {
+          "name": "user_email",
+          "columns": [
+            {
+              "expression": "club_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "email_global": {
+          "name": "email_global",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "user_club_id_id_pk": {
+          "name": "user_club_id_id_pk",
+          "columns": [
+            "club_id",
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.file_upload_state": {
+      "name": "file_upload_state",
+      "schema": "public",
+      "values": [
+        "pending-upload",
+        "uploaded",
+        "removing"
+      ]
+    },
+    "public.permission_type": {
+      "name": "permission_type",
+      "schema": "public",
+      "values": [
+        "admin",
+        "add:user",
+        "update:user",
+        "delete:user"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

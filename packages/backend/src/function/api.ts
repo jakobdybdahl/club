@@ -9,6 +9,7 @@ import { HTTPException } from "hono/http-exception";
 import { ZodError } from "zod";
 import { AccountRoute } from "../api/account";
 import { auth } from "../api/auth";
+import { MediaRoute } from "../api/media";
 import { ZeroRoute } from "../api/sync";
 
 export const api = new Hono()
@@ -79,7 +80,8 @@ export const api = new Hono()
   })
   .get("/", (c) => c.text("ok"))
   .route("/account", AccountRoute)
-  .route("/sync", ZeroRoute);
+  .route("/sync", ZeroRoute)
+  .route("/media", MediaRoute);
 
 export const handler = handle(api);
 

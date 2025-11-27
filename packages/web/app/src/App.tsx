@@ -11,6 +11,7 @@ import {
   Separator,
   Toaster,
 } from "@club/ui";
+import { ThemeProvider } from "@club/ui/providers";
 import { queries } from "@club/zero/queries";
 import { useQuery } from "@rocicorp/zero/react";
 import dayjs from "dayjs";
@@ -26,7 +27,8 @@ import {
   useParams,
 } from "react-router";
 import { Code, Email } from "./features/auth";
-import { ClubRoute } from "./features/club";
+import { CmsPage } from "./features/cms";
+import { NotFound } from "./features/error-pages";
 import "./i18n/config";
 import { AccountProvider, useAccount } from "./providers/account";
 import { AuthProvider, useAuth } from "./providers/auth";
@@ -330,35 +332,85 @@ function Navbar() {
   );
 }
 
+const APP_DOMAIN = import.meta.env.DEV
+  ? "app.localhost"
+  : import.meta.env.VITE_DOMAIN;
+
+const HOSTED_CMS_DOMAIN = import.meta.env.DEV
+  ? "cms.localhost"
+  : `cms.${import.meta.env.VITE_DOMAIN}`;
+
+function CmsRoute() {
+  const hostname = window.location.hostname;
+  const { type, value } = useMemo(() => {
+    if (hostname.endsWith(HOSTED_CMS_DOMAIN)) {
+      const splits = hostname.split(HOSTED_CMS_DOMAIN);
+      if (splits.length !== 2) {
+        throw new Error("Expected two parts of hostname");
+      }
+      const slug = splits[0].slice(0, -1); // remove trailing '.'
+      return {
+        value: slug,
+        type: "slug" as const,
+      };
+    } else {
+      return {
+        value: hostname,
+        type: "custom-domain" as const,
+      };
+    }
+  }, [hostname]);
+
+  const [club, clubResult] = useQuery(
+    type === "custom-domain"
+      ? queries.cmsByDomain({ type: "public" }, { domain: value })
+      : queries.cmsBySlug({ type: "public" }, { slug: value })
+  );
+
+  if (clubResult.type === "unknown") return null;
+  if (!club) {
+    return <NotFound />;
+  }
+  if (clubResult.type !== "complete") return null;
+
+  return <CmsPage config={club} />;
+}
+
+function AppContextPicker() {
+  const hostname = window.location.hostname;
+  const isCms = useMemo(() => hostname !== APP_DOMAIN, [hostname]);
+
+  if (isCms) {
+    return <CmsRoute />;
+  }
+
+  return <div className="p-8 text-xl">App</div>;
+}
+
 function App() {
   return (
     <LocaleProvider>
-      <AuthProvider>
-        <ZeroProvider>
-          <Toaster />
-          <BrowserRouter>
-            <Routes>
-              <Route path="auth/email" element={<Email />} />
-              <Route path="auth/code" element={<Code />} />
-              <Route
-                path="*"
-                element={
-                  <AccountProvider>
-                    <div className="flex flex-col">
-                      <Navbar />
-                      <Outlet />
-                    </div>
-                  </AccountProvider>
-                }
-              >
-                <Route path="c/:slug/*" element={<ClubRoute />} />
-                <Route path="*" element={<Home />} />
-                {/* <Route path="*" element={<NotFound />} /> */}
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </ZeroProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ZeroProvider>
+            <Toaster />
+            <BrowserRouter>
+              <Routes>
+                <Route path="auth/email" element={<Email />} />
+                <Route path="auth/code" element={<Code />} />
+                <Route
+                  path="*"
+                  element={
+                    <AccountProvider>
+                      <AppContextPicker />
+                    </AccountProvider>
+                  }
+                />
+              </Routes>
+            </BrowserRouter>
+          </ZeroProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </LocaleProvider>
   );
 }

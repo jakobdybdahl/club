@@ -20,5 +20,6 @@ export default $config({
     await import("./infra/web");
     await import("./infra/cluster");
     await import("./infra/storage");
+    await import("./infra/cdn");
   },
 });

@@ -71,7 +71,10 @@ export const AccountProvider = ({
       }
       const request = (async () => {
         try {
-          const access = await auth.access(id).catch(() => undefined);
+          const access = await auth.access(id).catch((e) => {
+            console.log(e);
+            return undefined;
+          });
           if (!access) {
             auth.authorize();
             return;
