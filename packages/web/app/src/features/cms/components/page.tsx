@@ -1,11 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useClub } from "@/features/club/context";
-import { useZero } from "@/providers/zero";
+import { mutators } from "@/providers/zero/mutators";
 import { pageSchema, Widget } from "@club/core/cms/page/schema";
 import { queries } from "@club/zero/queries";
 import { schema } from "@club/zero/schema";
 import { Row } from "@rocicorp/zero";
-import { useQuery } from "@rocicorp/zero/react";
+import { useQuery, useZero } from "@rocicorp/zero/react";
 import { nanoid } from "nanoid";
 import React, { useMemo } from "react";
 import { useLocation } from "react-router";
@@ -33,10 +33,7 @@ export function PageRouter() {
   const { pathname } = useLocation();
 
   const [page, { type }] = useQuery(
-    queries.page(
-      { type: "public" },
-      { clubId: club.id, pageSlug: pathname.substring(1) }
-    )
+    queries.page({ clubId: club.id, pageSlug: pathname.substring(1) })
   );
 
   const parseResult = useMemo(() => {
@@ -61,20 +58,22 @@ export function PageRouter() {
   const handleOnAdd = (widget: Widget) => {
     const now = Date.now();
     if (!page) {
-      z.mutate.page.create({
-        actorId: "anon",
-        body: {
-          widgets: [widget],
-        },
-        clubId: club.id,
-        id: nanoid(),
-        parentId: null,
-        timeCreated: now,
-        timeUpdated: now,
-        title: pathname,
-        slug: pathname,
-        visibility: "public",
-      });
+      z.mutate(
+        mutators.page.create({
+          actorId: "anon",
+          body: {
+            widgets: [widget],
+          },
+          clubId: club.id,
+          id: nanoid(),
+          parentId: null,
+          timeCreated: now,
+          timeUpdated: now,
+          title: pathname,
+          slug: pathname,
+          visibility: "public",
+        })
+      );
     } else {
       const pageBody = parseResult.body
         ? {
@@ -87,14 +86,16 @@ export function PageRouter() {
 
       console.log("updating page", page.title, pageBody);
 
-      z.mutate.page.update({
-        actorId: "anon",
-        body: pageBody,
-        clubId: club.id,
-        id: page.id,
-        timeUpdated: now,
-        title: page.title,
-      });
+      z.mutate(
+        mutators.page.update({
+          actorId: "anon",
+          body: pageBody,
+          clubId: club.id,
+          id: page.id,
+          timeUpdated: now,
+          title: page.title,
+        })
+      );
     }
   };
 

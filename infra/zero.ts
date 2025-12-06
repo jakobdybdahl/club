@@ -25,9 +25,9 @@ const zeroEnv = {
   ZERO_APP_ID: $app.stage,
   ZERO_ADMIN_PASSWORD: "somepassword",
   // ZERO_AUTH_JWKS_URL: $interpolate`${auth.url}/.well-known/jwks.json`,
-  ZERO_INITIAL_SYNC_ROW_BATCH_SIZE: "30000",
+  // ZERO_INITIAL_SYNC_ROW_BATCH_SIZE: "30000",
   ZERO_MUTATE_URL: $interpolate`${api.url}/sync/mutate`,
-  ZERO_GET_QUERIES_URL: $interpolate`${api.url}/sync/get-queries`,
+  ZERO_QUERY_URL: $interpolate`${api.url}/sync/query`,
   ...($dev
     ? {}
     : {

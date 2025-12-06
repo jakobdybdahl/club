@@ -16,30 +16,19 @@ const PermissionContext = React.createContext<PermissionContextType>({
 
 const PermissionProvider = ({ children }: { children: React.ReactNode }) => {
   const { id: clubId, user } = useClub();
+  const [groups] = useQuery(queries.permissionGroups({ clubId }), {
+    enabled: !!user,
+  });
 
-  const [groups] = useQuery(
-    queries.permissionGroups(
-      user
-        ? {
-            type: "user",
-            properties: {
-              clubId: clubId,
-              userId: user.id,
-              permissions: [],
-            },
-          }
-        : { type: "public" },
-      { clubId }
-    ),
-    { enabled: !!user }
+  const permissions = useMemo(
+    () =>
+      Array.from(
+        groups
+          .flatMap((group) => group.permissions)
+          .reduce((set, p) => set.add(p), new Set<Permission>())
+      ),
+    [groups]
   );
-
-  const permissions = useMemo(() => {
-    const all = groups.flatMap((group) => group.permissions);
-    return Array.from(
-      all.reduce((set, p) => set.add(p), new Set<Permission>())
-    );
-  }, [groups]);
 
   useEffect(() => console.log({ permissions }), [permissions]);
 

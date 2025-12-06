@@ -1,5 +1,6 @@
 import { sql } from "@club/core/drizzle/index";
 import { createTransaction, Transaction } from "@club/core/util/transaction";
+import { MaybePromise } from "@rocicorp/zero";
 import {
   Database,
   TransactionProviderHooks,
@@ -11,7 +12,7 @@ export class DrizzleDatabaseProvider implements Database<Transaction> {
     callback: (
       tx: Transaction,
       transactionHooks: TransactionProviderHooks
-    ) => Promise<R>,
+    ) => MaybePromise<R>,
     transactionInput?: TransactionProviderInput
   ): Promise<R> {
     const {
@@ -21,15 +22,15 @@ export class DrizzleDatabaseProvider implements Database<Transaction> {
       mutationID = 0,
     } = transactionInput ?? {};
 
-    return createTransaction((tx) =>
-      callback(tx, {
+    return createTransaction(async (tx) => {
+      return callback(tx, {
         async updateClientMutationID() {
           const query = sql.raw(`INSERT INTO ${upstreamSchema}.clients 
-                  as current ("clientGroupID", "clientID", "lastMutationID")
-                      VALUES ('${clientGroupID}', '${clientID}', ${1})
-                  ON CONFLICT ("clientGroupID", "clientID")
-                  DO UPDATE SET "lastMutationID" = current."lastMutationID" + 1
-                  RETURNING "lastMutationID"`);
+            as current ("clientGroupID", "clientID", "lastMutationID")
+            VALUES ('${clientGroupID}', '${clientID}', ${1})
+            ON CONFLICT ("clientGroupID", "clientID")
+            DO UPDATE SET "lastMutationID" = current."lastMutationID" + 1
+            RETURNING "lastMutationID"`);
 
           const [{ lastMutationID }] = (await tx.execute(query)) as any;
 
@@ -37,16 +38,16 @@ export class DrizzleDatabaseProvider implements Database<Transaction> {
         },
         async writeMutationResult(result) {
           const query = sql`INSERT INTO ${sql.raw(upstreamSchema)}.mutations
-                            ("clientGroupID", "clientID", "mutationID", "result")
-                            VALUES (
-                              '${sql.raw(clientGroupID)}',
-                              '${sql.raw(result.id.clientID)}',
-                              '${sql.raw(result.id.id.toString())}',
-                              ${JSON.stringify(result.result)}
-                            )`;
+            ("clientGroupID", "clientID", "mutationID", "result")
+            VALUES (
+              '${sql.raw(clientGroupID)}',
+              '${sql.raw(result.id.clientID)}',
+              '${sql.raw(result.id.id.toString())}',
+              ${JSON.stringify(result.result)}
+              )`;
           await tx.execute(query);
         },
-      })
-    );
+      });
+    });
   }
 }

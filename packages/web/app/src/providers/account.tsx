@@ -23,7 +23,7 @@ type AccountState = {
   accounts: Record<string, Account | undefined>;
   setAccount: (
     id: string,
-    val: { email: string; clubs: ClubWithUser[] }
+    val: { id: string; email: string; clubs: ClubWithUser[] }
   ) => void;
 };
 
@@ -36,7 +36,11 @@ const useStore = create<AccountState>()(
           ...state,
           accounts: {
             ...state.accounts,
-            [id]: { id, email: account.email, clubs: account.clubs },
+            [id]: {
+              id: account.id,
+              email: account.email,
+              clubs: account.clubs,
+            },
           },
         })),
     }),
@@ -76,7 +80,7 @@ export const AccountProvider = ({
             return undefined;
           });
           if (!access) {
-            auth.authorize();
+            // auth.authorize();
             return;
           }
           return await fetch(import.meta.env.VITE_API_URL + "/account", {
@@ -86,7 +90,6 @@ export const AccountProvider = ({
           })
             .then((val) => val.json())
             .then((val) => {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
               if (val.id) store.setAccount(id, val);
             });
         } finally {
@@ -115,12 +118,6 @@ export const AccountProvider = ({
     setPrev(Object.keys(auth.all));
   }, []);
 
-  // useEffect(() => {
-  //   if (Object.values(auth.all).length === 0) {
-  //     auth.authorize();
-  //   }
-  // }, [auth.all]);
-
   const ctx = useMemo(() => {
     return {
       get all() {
@@ -132,9 +129,6 @@ export const AccountProvider = ({
       refresh,
     };
   }, [auth.all, store.accounts, refresh]);
-
-  // if (!auth.subject) return null;
-  // if (store.accounts[auth.subject.id]?.email === undefined) return null;
 
   return (
     <AccountContext.Provider value={ctx}>{children}</AccountContext.Provider>

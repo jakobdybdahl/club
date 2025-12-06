@@ -10,6 +10,6 @@
     "@club/core": "workspace:*"
   },
   "scripts": {
-    "dev": "zero-deploy-permissions && zero-cache"
+    "dev": "zero-cache"
   }
 }

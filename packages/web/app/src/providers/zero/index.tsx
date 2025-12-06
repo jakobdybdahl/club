@@ -1,42 +1,55 @@
-import { type Schema, schema } from "@club/zero/schema";
-import { Zero } from "@rocicorp/zero";
-import {
-  ZeroProvider as BaseZeroProvider,
-  createUseZero,
-} from "@rocicorp/zero/react";
-import { useEffect, useState } from "react";
+import { schema } from "@club/zero/schema";
+import { ZeroProvider as BaseZeroProvider } from "@rocicorp/zero/react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useAccount } from "../account";
 import { useAuth } from "../auth";
-import { createMutators } from "./mutators";
+import { mutators } from "./mutators";
+
+const ANONYMOUS_USER_ID = "anon";
 
 export const ZeroProvider = ({ children }: { children: React.ReactNode }) => {
   const auth = useAuth();
-  const [z, setZ] = useState<Zero<Schema> | null>(null);
+  const { current: account } = useAccount();
 
-  useEffect(() => {
-    console.log("setting zero");
-    const userId = auth.subject?.id ?? "anon";
-    if (z?.userID === userId) return;
-    setZ(
-      new Zero({
-        schema: schema,
-        auth: () => auth.access(),
-        userID: userId,
-        server: import.meta.env.VITE_ZERO_URL,
-        mutators: createMutators(),
-      })
-    );
-  }, [auth.subject?.id]);
+  const userId = auth.subject?.id ?? ANONYMOUS_USER_ID;
 
+  const context = useMemo(() => {
+    return account
+      ? {
+          type: "account",
+          properties: { accountId: account.id, email: account.email },
+        }
+      : { type: "public" };
+  }, [account?.id]);
+
+  const [isInitialized, setIsInitialized] = useState(false);
+  const token = useRef<string>(null);
   useEffect(() => {
-    return () => {
-      void z?.close();
+    const get = async () => {
+      const access = await auth.access();
+      token.current = access ?? null;
+      setIsInitialized(true);
     };
-  }, [z]);
+    void get();
+  }, [userId]);
 
-  return z && <BaseZeroProvider zero={z}>{children}</BaseZeroProvider>;
+  useEffect(() => console.log("zero token", token.current), [token.current]);
+  useEffect(() => console.log("zero context", context), [context]);
+
+  return (
+    isInitialized && (
+      <BaseZeroProvider
+        {...{
+          schema,
+          userID: userId,
+          auth: token.current,
+          mutators,
+          context,
+          server: import.meta.env.VITE_ZERO_URL,
+        }}
+      >
+        {children}
+      </BaseZeroProvider>
+    )
+  );
 };
-
-export const useZero = createUseZero<
-  Schema,
-  ReturnType<typeof createMutators>
->();

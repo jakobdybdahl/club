@@ -1,125 +1,168 @@
-import { Actor, useActor, UserActor, withActor } from "@club/core/actor";
-import { Club } from "@club/core/club/index";
-import { User } from "@club/core/user/index";
+import {
+  AccountActor,
+  PublicActor,
+  useActor,
+  UserActor,
+} from "@club/core/actor";
+import { db } from "@club/core/drizzle/index";
+import { Permission } from "@club/core/permission/index";
+import { user } from "@club/core/user/user.sql";
 import { assert } from "@club/core/util/asserts";
 import { clubSchema, queries } from "@club/zero/queries";
 import { schema } from "@club/zero/schema";
-import { ReadonlyJSONValue, withValidation } from "@rocicorp/zero";
-import { handleGetQueriesRequest } from "@rocicorp/zero/server";
+import {
+  mustGetMutator,
+  mustGetQuery,
+  ReadonlyJSONValue,
+} from "@rocicorp/zero";
+import { handleMutateRequest, handleQueryRequest } from "@rocicorp/zero/server";
 import { Hono } from "hono";
 import z from "zod";
-import { mutators, processor } from "../zero";
-import { withAuthContext } from "../zero/mutators";
+import { dbProvider, mutators } from "../zero";
+
+const idOrSlugSchema = z.union([
+  clubSchema,
+  z.object({ slug: z.string().trim().nonempty() }),
+]);
+
+const prepareContext = async ({
+  actor,
+}: {
+  actor: PublicActor | AccountActor;
+}) => {
+  const userClubs = await (async () => {
+    if (actor.type === "public") return null;
+    const clubsResult = await db.query.club.findMany({
+      where: (_, { exists, eq }) =>
+        exists(
+          db.select().from(user).where(eq(user.email, actor.properties.email))
+        ),
+      with: {
+        users: {
+          limit: 1,
+          where: (table, { eq }) => eq(table.email, actor.properties.email),
+          columns: {
+            id: true,
+            email: true,
+          },
+          with: {
+            permissionGroupMemberships: {
+              columns: {},
+              with: {
+                group: {
+                  columns: { permissions: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    return new Map(
+      clubsResult.map((club) => {
+        const { users, ...rest } = club;
+        const user = users.at(0);
+        assert(user, "Expected user to be defiend");
+        const permissions = Array.from(
+          user.permissionGroupMemberships
+            .flatMap(({ group }) => group.permissions)
+            .reduce((set, p) => set.add(p), new Set<Permission>())
+        );
+        return [
+          club.id,
+          { ...rest, user: { id: user.id, email: user.email }, permissions },
+        ];
+      })
+    );
+  })();
+
+  const fromId = (id: string): PublicActor | AccountActor | UserActor => {
+    const club = userClubs?.get(id);
+    if (!club) return actor;
+    return {
+      type: "user",
+      properties: {
+        clubId: club.id,
+        userId: club.user.id,
+        permissions: club.permissions,
+      },
+    };
+  };
+
+  const fromSlug = (slug: string): PublicActor | AccountActor | UserActor => {
+    const allClubs = Array.from(userClubs?.values() ?? []);
+    const club = allClubs.find((c) => c.slug === slug);
+    if (!club) return actor;
+    return {
+      type: "user",
+      properties: {
+        clubId: club.id,
+        userId: club.user.id,
+        permissions: club.permissions,
+      },
+    };
+  };
+
+  const byArgs = (
+    args: ReadonlyJSONValue | undefined
+  ): PublicActor | AccountActor | UserActor => {
+    if (!args) return actor;
+    if (actor.type === "public") return actor;
+    const parseResult = idOrSlugSchema.safeParse(args);
+    if (!parseResult.success) return actor;
+    if ("clubId" in parseResult.data) {
+      return fromId(parseResult.data.clubId);
+    } else {
+      return fromSlug(parseResult.data.slug);
+    }
+  };
+
+  return {
+    fromId,
+    fromSlug,
+    byArgs,
+  };
+};
 
 export const ZeroRoute = new Hono()
   .post("/mutate", async (c) => {
-    const body = await c.req.json();
-    console.log(JSON.stringify(body, null, 2));
-    return withAuthContext(
-      { actor: useActor(), requests: new Map() },
-      async () => {
-        const response = await processor.process(mutators, c.req.query(), body);
-        console.log(JSON.stringify(response, null, 2));
-        return c.json(response);
-      }
-    );
-  })
-  .post("/get-queries", async (c) => {
     const actor = useActor();
     if (actor.type !== "public" && actor.type !== "account") {
       throw new Error(`Did not expected actor of type ${actor.type}`);
     }
 
-    const actorRequests = new Map<string, Promise<Actor>>();
+    const clubContext = await prepareContext({ actor });
+    const response = await handleMutateRequest(
+      dbProvider,
+      (transact) =>
+        transact((_, name, args) => {
+          const mutator = mustGetMutator(mutators, name);
+          const clubActor = clubContext.byArgs(args);
+          return mutator.fn({ args, ctx: clubActor, tx: {} as any });
+        }),
+      c.req.raw,
+      "info"
+    );
 
-    const IdOrSlugSchema = z.union([
-      clubSchema,
-      z.object({ slug: z.string().trim().nonempty() }),
-    ]);
-
-    async function getAuthContext(args: readonly ReadonlyJSONValue[]) {
-      if (actor.type === "public") return actor;
-
-      const parseResult = IdOrSlugSchema.safeParse(args[0]);
-      if (!parseResult.success) return actor;
-
-      const key =
-        "clubId" in parseResult.data
-          ? parseResult.data.clubId
-          : parseResult.data.slug;
-
-      const existingRequest = actorRequests.get(key);
-      if (existingRequest) {
-        return existingRequest;
-      }
-
-      const request = (async () => {
-        assert(
-          actor.type === "account",
-          "Did not expect actor type other than account"
-        );
-
-        const clubId = await (async () => {
-          if ("clubId" in parseResult.data) return parseResult.data.clubId;
-          const bySlug = await Club.fromSlug(parseResult.data.slug);
-          return bySlug?.id;
-        })();
-
-        if (!clubId) return actor;
-
-        return withActor(
-          { type: "system", properties: { clubId } },
-          async () => {
-            const user = await User.fromEmail(actor.properties.email);
-            if (!user || user.timeDeleted) {
-              return actor;
-            }
-            return {
-              type: "user",
-              properties: {
-                clubId,
-                userId: user.id,
-                permissions: user.permissions,
-              },
-            } satisfies UserActor;
-          }
-        );
-      })();
-
-      actorRequests.set(key, request);
-
-      return request;
+    return c.json(response);
+  })
+  .post("/query", async (c) => {
+    const actor = useActor();
+    if (actor.type !== "public" && actor.type !== "account") {
+      throw new Error(`Did not expected actor of type ${actor.type}`);
     }
 
-    function getQuery(
-      actor: Actor,
-      name: string,
-      args: readonly ReadonlyJSONValue[]
-    ) {
-      const q = validated[name];
-      if (!q) {
-        throw new Error(`No such query: ${name}`);
-      }
-      return {
-        query: q(actor, ...args),
-      };
-    }
-
-    const res = await handleGetQueriesRequest(
-      async (name, args) => {
-        const authContext = await getAuthContext(args);
-        console.log({ name, authContext, args });
-        return getQuery(authContext, name, args);
+    const clubContext = await prepareContext({ actor });
+    const res = await handleQueryRequest(
+      (name, args) => {
+        const clubActor = clubContext.byArgs(args);
+        const query = mustGetQuery(queries, name);
+        console.log(name, clubActor);
+        return query(args).toQuery(clubActor);
       },
       schema,
       c.req.raw
     );
 
-    // console.log(JSON.stringify(res, null, 2));
-
     return c.json<any>(res);
   });
-
-const validated = Object.fromEntries(
-  Object.values(queries).map((q) => [q.queryName, withValidation(q)])
-);

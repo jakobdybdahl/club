@@ -1,4 +1,6 @@
+import { relations } from "drizzle-orm";
 import { pgTable, uniqueIndex, varchar } from "drizzle-orm/pg-core";
+import { user } from "../user/user.sql";
 import { id, timestamps } from "../util/sql";
 
 export const club = pgTable(
@@ -13,3 +15,7 @@ export const club = pgTable(
   },
   (table) => [uniqueIndex("slug").on(table.slug)]
 );
+
+export const clubRelations = relations(club, ({ many }) => ({
+  users: many(user),
+}));

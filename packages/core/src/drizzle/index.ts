@@ -2,6 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { default as pg } from "postgres";
 import { Resource } from "sst";
 import * as clubSchema from "../club/club.sql";
+import * as permissionSchema from "../permission/permission.sql";
 import * as userSchema from "../user/user.sql";
 
 export * from "drizzle-orm";
@@ -10,6 +11,7 @@ export { migrate } from "drizzle-orm/postgres-js/migrator";
 export const schema = {
   ...clubSchema,
   ...userSchema,
+  ...permissionSchema,
 };
 
 const pgClient = pg({

@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { index, pgTable, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 import { club } from "../club/club.sql";
+import { permissionGroupMember } from "../permission/permission.sql";
 import {
   clubId,
   clubIndexes,
@@ -29,9 +30,10 @@ export const user = pgTable(
   ]
 );
 
-export const userRelations = relations(user, ({ one }) => ({
+export const userRelations = relations(user, ({ one, many }) => ({
   club: one(club, {
     fields: [user.clubId],
     references: [club.id],
   }),
+  permissionGroupMemberships: many(permissionGroupMember),
 }));

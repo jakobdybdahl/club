@@ -2,7 +2,6 @@ import {
   boolean,
   createBuilder,
   createSchema,
-  definePermissions,
   enumeration,
   json,
   number,
@@ -11,7 +10,12 @@ import {
   table,
 } from "@rocicorp/zero";
 
-import type { Actor } from "@club/core/actor";
+import type {
+  AccountActor,
+  Actor,
+  PublicActor,
+  UserActor,
+} from "@club/core/actor";
 import type { Permission } from "@club/core/permission/index";
 
 // COMMON
@@ -208,7 +212,11 @@ export const schema = createSchema({
 
 export const builder = createBuilder(schema);
 
-export const permissions: ReturnType<typeof definePermissions> =
-  definePermissions<unknown, Schema>(schema, () => ({}));
-
 export type Schema = typeof schema;
+
+declare module "@rocicorp/zero" {
+  interface DefaultTypes {
+    schema: typeof schema;
+    context: PublicActor | UserActor | AccountActor;
+  }
+}

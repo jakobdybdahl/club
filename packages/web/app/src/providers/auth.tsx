@@ -174,7 +174,8 @@ export function AuthProvider(props: AuthContextOpts) {
           });
           if (access.err) {
             ctx.logout(id);
-            authorize();
+            console.log("error when refetching tokens");
+            // authorize();
             return;
           }
           if (access.tokens) {

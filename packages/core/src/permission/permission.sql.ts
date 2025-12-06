@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   boolean,
   foreignKey,
@@ -34,6 +35,13 @@ export const permissionGroup = pgTable(
   ]
 );
 
+export const permissionGroupRelations = relations(
+  permissionGroup,
+  ({ many }) => ({
+    members: many(permissionGroupMember),
+  })
+);
+
 export const permissionGroupMember = pgTable(
   "permission_group_member",
   {
@@ -56,4 +64,18 @@ export const permissionGroupMember = pgTable(
       foreignColumns: [permissionGroup.clubId, permissionGroup.id],
     }).onDelete("cascade"),
   ]
+);
+
+export const permissionGroupMemberRelations = relations(
+  permissionGroupMember,
+  ({ one, many }) => ({
+    group: one(permissionGroup, {
+      fields: [permissionGroupMember.groupId, permissionGroupMember.clubId],
+      references: [permissionGroup.id, permissionGroup.clubId],
+    }),
+    user: one(user, {
+      fields: [permissionGroupMember.clubId, permissionGroupMember.userId],
+      references: [user.clubId, user.id],
+    }),
+  })
 );

@@ -1,4 +1,5 @@
 import { ApiProvider } from "@/providers/api";
+import { PermissionProvider } from "@/providers/permissions";
 import { buildMenu } from "@club/core/cms/menu/build-menu";
 import { queries } from "@club/zero/queries";
 import { QueryResultType } from "@rocicorp/zero";
@@ -18,9 +19,7 @@ export function CmsPage({ config }: { config: CmsQuery }) {
     return buildMenu(config.menu.config);
   }, [config]);
 
-  const [club, { type }] = useQuery(
-    queries.club({ type: "public" }, { slug: config.slug })
-  );
+  const [club, { type }] = useQuery(queries.club({ clubId: config.id }));
 
   if (!club && type === "complete") {
     return <NotFound />;
@@ -32,14 +31,16 @@ export function CmsPage({ config }: { config: CmsQuery }) {
         path="*"
         element={
           <div className="flex flex-col items-center justify-center bg-background">
-            <div className="p-4 sticky top-0 bg-background/80 backdrop-blur-xl w-full flex justify-center">
+            <div className="p-4 sticky top-0 bg-background/90 backdrop-blur-xl w-full flex justify-center">
               <Menu items={menu ?? []} />
             </div>
             {club && (
               <ClubContext.Provider value={club}>
-                <ApiProvider>
-                  <Outlet />
-                </ApiProvider>
+                <PermissionProvider>
+                  <ApiProvider>
+                    <Outlet />
+                  </ApiProvider>
+                </PermissionProvider>
               </ClubContext.Provider>
             )}
           </div>
