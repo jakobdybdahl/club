@@ -2,7 +2,7 @@ import { Page } from "@club/core/cms/index";
 import { Event } from "@club/core/event/index";
 import type { User } from "@club/core/user/index";
 import { toSlug } from "@club/core/util/slug";
-import type { WithId, WithRequired } from "@club/core/util/types";
+import type { WithId } from "@club/core/util/types";
 import type { schema } from "@club/zero/schema";
 import {
   defineMutator,
@@ -12,23 +12,14 @@ import {
 
 export type MutatorTx = Transaction<typeof schema>;
 
-type Populated<T extends { timeCreated?: number; timeUpdated?: number }> =
-  WithRequired<T, "timeCreated" | "timeUpdated"> & {
-    clubId: string;
-    actorId: string;
-  };
-
-type Create<T extends { timeCreated?: number; timeUpdated?: number }> =
-  Populated<T extends { id?: string | undefined | null } ? WithId<T> : T>;
-
-type Populated2<T> = T & {
+type Populated<T> = T & {
   clubId: string;
   actorId: string;
   timeCreated: number;
   timeUpdated: number;
 };
 
-type Create2<T> = Populated2<
+type Create<T> = Populated<
   T extends { id?: string | undefined | null } ? WithId<T> : T
 >;
 
@@ -69,7 +60,7 @@ export const mutators = defineMutators({
     }),
   },
   page: {
-    create: defineMutator<Create2<Page.CreateInput>>(async ({ tx, args }) => {
+    create: defineMutator<Create<Page.CreateInput>>(async ({ tx, args }) => {
       await tx.mutate.page.insert({
         id: args.id,
         clubId: args.clubId,
