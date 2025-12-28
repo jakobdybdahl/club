@@ -6,6 +6,10 @@ export const clubSchema = z.object({
   clubId: z.nanoid(),
 });
 
+export const clubSlugSchema = z.object({
+  slug: z.string().trim().nonempty(),
+});
+
 export const queries = defineQueries({
   permissionGroups: defineQuery(clubSchema, ({ args, ctx }) => {
     if (ctx.type === "public") {
@@ -19,24 +23,19 @@ export const queries = defineQueries({
           : q.where("id", ctx.properties.userId)
       );
   }),
-  cmsByDomain: defineQuery(
-    z.object({ domain: z.string().trim().nonempty() }),
+  cms: defineQuery(
+    z.object({
+      type: z.enum(["slug", "custom-domain"]),
+      value: z.string().trim().nonempty(),
+    }),
     ({ args }) => {
-      return builder.club
-        .whereExists("customDomain", (q) => q.where("domain", args.domain))
-        .related("menu")
-        .related("pages")
-        .one();
-    }
-  ),
-  cmsBySlug: defineQuery(
-    z.object({ slug: z.string().trim().nonempty() }),
-    ({ args }) => {
-      return builder.club
-        .where("slug", args.slug)
-        .related("menu")
-        .related("pages")
-        .one();
+      let q = builder.club.related("menu").related("pages");
+      if (args.type === "custom-domain") {
+        q = q.whereExists("customDomain", (q) => q.where("domain", args.value));
+      } else {
+        q = q.where("slug", args.value);
+      }
+      return q.one();
     }
   ),
   pages: defineQuery(clubSchema, ({ args, ctx }) => {
@@ -58,9 +57,24 @@ export const queries = defineQueries({
       return q.one();
     }
   ),
+  clubs: defineQuery(() => {
+    return builder.club
+      .where("timeDeleted", "IS", null)
+      .related("users", (q) => q.orderBy("timeCreated", "desc").limit(100))
+      .related("events", (q) => q.orderBy("timeCreated", "desc").limit(10))
+      .limit(100);
+  }),
   club: defineQuery(clubSchema, ({ args }) => {
     return builder.club
       .where("id", args.clubId)
+      .where("timeDeleted", "IS", null)
+      .related("users")
+      .related("events", (q) => q.where("timeDeleted", "IS", null))
+      .one();
+  }),
+  clubBySlug: defineQuery(clubSlugSchema, ({ args }) => {
+    return builder.club
+      .where("slug", args.slug)
       .where("timeDeleted", "IS", null)
       .related("users")
       .related("events", (q) => q.where("timeDeleted", "IS", null))

@@ -80,6 +80,7 @@ export const AccountProvider = ({
             return undefined;
           });
           if (!access) {
+            console.error("Failed to get access token"!);
             // auth.authorize();
             return;
           }

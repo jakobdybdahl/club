@@ -25,13 +25,15 @@ const idOrSlugSchema = z.union([
   z.object({ slug: z.string().trim().nonempty() }),
 ]);
 
-const prepareContext = async ({
-  actor,
-}: {
-  actor: PublicActor | AccountActor;
-}) => {
+const prepareActor = async () => {
+  const actor = useActor();
+  if (actor.type !== "public" && actor.type !== "account") {
+    throw new Error(`Did not expected actor of type ${actor.type}`);
+  }
+
   const userClubs = await (async () => {
     if (actor.type === "public") return null;
+
     const clubsResult = await db.query.club.findMany({
       where: (_, { exists, eq }) =>
         exists(
@@ -58,6 +60,7 @@ const prepareContext = async ({
         },
       },
     });
+
     return new Map(
       clubsResult.map((club) => {
         const { users, ...rest } = club;
@@ -126,43 +129,33 @@ const prepareContext = async ({
 
 export const ZeroRoute = new Hono()
   .post("/mutate", async (c) => {
-    const actor = useActor();
-    if (actor.type !== "public" && actor.type !== "account") {
-      throw new Error(`Did not expected actor of type ${actor.type}`);
-    }
-
-    const clubContext = await prepareContext({ actor });
+    const actor = await prepareActor();
     const response = await handleMutateRequest(
       dbProvider,
       (transact) =>
         transact((_, name, args) => {
           const mutator = mustGetMutator(mutators, name);
-          const clubActor = clubContext.byArgs(args);
-          return mutator.fn({ args, ctx: clubActor, tx: {} as any });
+          return mutator.fn({
+            args,
+            ctx: actor.byArgs(args),
+            tx: {} as any,
+          });
         }),
       c.req.raw,
       "info"
     );
-
     return c.json(response);
   })
   .post("/query", async (c) => {
-    const actor = useActor();
-    if (actor.type !== "public" && actor.type !== "account") {
-      throw new Error(`Did not expected actor of type ${actor.type}`);
-    }
-
-    const clubContext = await prepareContext({ actor });
+    const actor = await prepareActor();
     const res = await handleQueryRequest(
       (name, args) => {
-        const clubActor = clubContext.byArgs(args);
         const query = mustGetQuery(queries, name);
-        console.log(name, clubActor);
-        return query(args).toQuery(clubActor);
+        return query.fn({ args, ctx: actor.byArgs(args) });
       },
       schema,
-      c.req.raw
+      c.req.raw,
+      "info"
     );
-
-    return c.json<any>(res);
+    return c.json(res);
   });

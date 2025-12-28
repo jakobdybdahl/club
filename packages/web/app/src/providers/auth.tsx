@@ -161,8 +161,10 @@ export function AuthProvider(props: AuthContextOpts) {
   const pendingRequests = useMemo(() => new Map<string, Promise<any>>(), []);
   const getAccess = useCallback(
     async (id: string) => {
+      console.log("getting access token for", id);
       const existingRequest = pendingRequests.get(id);
       if (existingRequest) {
+        console.log("reusing request", id);
         return existingRequest;
       }
       const request = (async () => {
@@ -174,7 +176,7 @@ export function AuthProvider(props: AuthContextOpts) {
           });
           if (access.err) {
             ctx.logout(id);
-            console.log("error when refetching tokens");
+            console.error("error when refetching tokens", access.err);
             // authorize();
             return;
           }

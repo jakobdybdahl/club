@@ -31,10 +31,9 @@ export function buildMenu(config: unknown) {
   const parseResult = menuSchema.safeParse(config);
   if (!parseResult.success) {
     console.log(parseResult.error);
+    return null;
   }
-  if (!parseResult.success) return null;
   const data = parseResult.data;
-  console.log(data);
   const items = buildTree(data.items);
   return items;
 }

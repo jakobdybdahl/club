@@ -1,12 +1,16 @@
-import { Toaster } from "@club/ui";
+import { SidebarInset, SidebarProvider, Toaster } from "@club/ui";
 import { ThemeProvider } from "@club/ui/providers";
 import { queries } from "@club/zero/queries";
 import { useQuery } from "@rocicorp/zero/react";
-import { useEffect, useMemo } from "react";
-import { BrowserRouter, Route, Routes } from "react-router";
+import { useMemo } from "react";
+import { BrowserRouter, Outlet, Route, Routes } from "react-router";
+import { AppSidebar } from "./components/sidebar";
 import { Code, Email } from "./features/auth";
 import { CmsPage } from "./features/cms";
 import { NotFound } from "./features/error-pages";
+import { ExploreClubsPage } from "./features/explore/clubs";
+import { ClubPage } from "./features/my-space";
+import { OverviewPage } from "./features/my-space/pages/overview";
 import "./i18n/config";
 import { AccountProvider } from "./providers/account";
 import { AuthProvider } from "./providers/auth";
@@ -42,13 +46,7 @@ function CmsRoute() {
     }
   }, [hostname]);
 
-  useEffect(() => console.log({ type, value }), [type, value]);
-
-  const [club, clubResult] = useQuery(
-    type === "custom-domain"
-      ? queries.cmsByDomain({ domain: value })
-      : queries.cmsBySlug({ slug: value })
-  );
+  const [club, clubResult] = useQuery(queries.cms({ type, value }));
 
   if (clubResult.type === "unknown") return null;
   if (!club) {
@@ -59,19 +57,38 @@ function CmsRoute() {
   return <CmsPage config={club} />;
 }
 
+function AppRoute() {
+  return (
+    <Routes>
+      <Route
+        element={
+          <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset>
+              <Outlet />
+            </SidebarInset>
+          </SidebarProvider>
+        }
+      >
+        <Route path="/" element={<OverviewPage />} />
+        <Route path="/events" element={<div>Events</div>} />
+        <Route path="/inbox" element={<div>Inbox</div>} />
+        <Route path="/explore/clubs" element={<ExploreClubsPage />} />
+        <Route path="/c/:slug/*" element={<ClubPage />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
+  );
+}
+
 function AppContextPicker() {
-  const hostname = window.location.hostname;
-  const isCms = useMemo(() => hostname !== APP_DOMAIN, [hostname]);
-
-  useEffect(() => console.log("app context picker"), []);
-
-  console.log({ isCms });
+  const isCms = window.location.hostname !== APP_DOMAIN;
 
   if (isCms) {
     return <CmsRoute />;
   }
 
-  return <div className="p-8 text-xl">App</div>;
+  return <AppRoute />;
 }
 
 function App() {
