@@ -1,4 +1,5 @@
 import {
+  cn,
   Dialog,
   DialogContent,
   DropdownMenu,
@@ -25,23 +26,49 @@ import {
   HomeIcon,
   InboxIcon,
   LogInIcon,
+  SearchIcon,
+  StarIcon,
   UserCircleIcon,
   UsersIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { Link } from "react-router";
+import { Link as BaseLink } from "react-router";
+
+function Link({ className, ...props }: React.ComponentProps<typeof BaseLink>) {
+  return <BaseLink className={cn("cursor-default", className)} {...props} />;
+}
 
 function PersonalNav() {
+  const [showSearchDialog, setShowSearchDialog] = useState(false);
+
+  useHotkeys("mod+k", () => {
+    if (showSearchDialog) return;
+    setShowSearchDialog(true);
+  });
+
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Personal</SidebarGroupLabel>
+      {/* <SidebarGroupLabel>Personal</SidebarGroupLabel> */}
       <SidebarMenu>
+        <SidebarMenuItem onClick={() => setShowSearchDialog(true)}>
+          {/* <SidebarMenuButton className="border border-sidebar-accent bg-sidebar-accent/40 -m-px"> */}
+          <SidebarMenuButton>
+            <SearchIcon />
+            <div className="flex-1 flex items-center">
+              <span className="flex-1">Search</span>
+              <span className="flex items-center gap-1">
+                <Mod mod="mod" />
+                <Kbd className="aspect-square">K</Kbd>
+              </span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
             <Link to="/">
               <HomeIcon />
-              <span>Overview</span>
+              <span>Home</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -49,7 +76,7 @@ function PersonalNav() {
           <SidebarMenuButton asChild>
             <Link to="/events">
               <CalendarIcon />
-              <span>My events</span>
+              <span>Events</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -61,6 +88,31 @@ function PersonalNav() {
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
+      </SidebarMenu>
+      <Dialog open={showSearchDialog} onOpenChange={setShowSearchDialog}>
+        <DialogContent className="p-8">
+          <div>Search todo..</div>
+        </DialogContent>
+      </Dialog>
+    </SidebarGroup>
+  );
+}
+
+function FavoritesNav() {
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>Favorites</SidebarGroupLabel>
+      <SidebarMenu>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <SidebarMenuItem key={i}>
+            <SidebarMenuButton asChild>
+              <Link to="/c/odder-cykel-klub" className="truncate">
+                <StarIcon />
+                Odder Cykel Klub
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
       </SidebarMenu>
     </SidebarGroup>
   );
@@ -143,7 +195,7 @@ function AccountSwitcher() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-blue-700/20 data-[state=open]:text-sidebar-accent-foreground border border-blue-800/40 bg-blue-700/10 gap-3 hover:bg-blue-700/20"
+              className="data-[state=open]:bg-blue-700/20 data-[state=open]:text-sidebar-accent-foreground border border-blue-800/40 bg-blue-700/10 gap-3 hover:bg-blue-700/20!"
             >
               <div className="rounded-lg size-8 flex items-center justify-center bg-blue-700 aspect-square">
                 <UserCircleIcon className="size-5" />
@@ -151,7 +203,7 @@ function AccountSwitcher() {
               <div className="flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">My account</span>
               </div>
-              <ChevronsUpDownIcon />
+              <ChevronsUpDownIcon className="text-muted-foreground" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
         </DropdownMenu>
@@ -170,7 +222,7 @@ function SignInItem() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground gap-3"
             >
-              <div className="rounded-lg size-8 flex items-center justify-center bg-white aspect-square">
+              <div className="rounded-lg size-8 flex items-center justify-center bg-white/80 aspect-square">
                 <LogInIcon className="size-5 text-background" />
               </div>
               <div className="flex-1 text-left text-sm leading-tight">
@@ -192,9 +244,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <AccountSwitcher />
       </SidebarHeader>
       <SidebarContent>
+        {/* <Search /> */}
         <PersonalNav />
+        <FavoritesNav />
+        <div className="flex-1" />
         <ExploreNav />
-        <Search />
       </SidebarContent>
       <SidebarFooter className="border-t">
         {/* <Button>Sign in</Button> */}
