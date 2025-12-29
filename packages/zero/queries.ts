@@ -1,6 +1,6 @@
 import { defineQueries, defineQuery } from "@rocicorp/zero";
 import z from "zod";
-import { builder } from "./schema";
+import { zql } from "./schema";
 
 export const clubSchema = z.object({
   clubId: z.nanoid(),
@@ -13,9 +13,9 @@ export const clubSlugSchema = z.object({
 export const queries = defineQueries({
   permissionGroups: defineQuery(clubSchema, ({ args, ctx }) => {
     if (ctx.type === "public") {
-      return builder.permissionGroup.where(({ or }) => or());
+      return zql.permissionGroup.where(({ or }) => or());
     }
-    return builder.permissionGroup
+    return zql.permissionGroup
       .where("clubId", args.clubId)
       .whereExists("members", (q) =>
         ctx.type === "account"
@@ -29,7 +29,7 @@ export const queries = defineQueries({
       value: z.string().trim().nonempty(),
     }),
     ({ args }) => {
-      let q = builder.club.related("menu").related("pages");
+      let q = zql.club.related("menu").related("pages");
       if (args.type === "custom-domain") {
         q = q.whereExists("customDomain", (q) => q.where("domain", args.value));
       } else {
@@ -39,7 +39,7 @@ export const queries = defineQueries({
     }
   ),
   pages: defineQuery(clubSchema, ({ args, ctx }) => {
-    let q = builder.page.where("clubId", args.clubId);
+    let q = zql.page.where("clubId", args.clubId);
     if (ctx.type !== "user") {
       q = q.where("visibility", "=", "public");
     }
@@ -48,7 +48,7 @@ export const queries = defineQueries({
   page: defineQuery(
     clubSchema.extend({ pageSlug: z.string().trim() }),
     ({ args, ctx }) => {
-      let q = builder.page
+      let q = zql.page
         .where("clubId", args.clubId)
         .where("slug", args.pageSlug);
       if (ctx.type !== "user") {
@@ -58,14 +58,14 @@ export const queries = defineQueries({
     }
   ),
   clubs: defineQuery(() => {
-    return builder.club
+    return zql.club
       .where("timeDeleted", "IS", null)
       .related("users", (q) => q.orderBy("timeCreated", "desc").limit(100))
       .related("events", (q) => q.orderBy("timeCreated", "desc").limit(10))
       .limit(100);
   }),
   club: defineQuery(clubSchema, ({ args }) => {
-    return builder.club
+    return zql.club
       .where("id", args.clubId)
       .where("timeDeleted", "IS", null)
       .related("users")
@@ -73,7 +73,7 @@ export const queries = defineQueries({
       .one();
   }),
   clubBySlug: defineQuery(clubSlugSchema, ({ args }) => {
-    return builder.club
+    return zql.club
       .where("slug", args.slug)
       .where("timeDeleted", "IS", null)
       .related("users")
@@ -81,14 +81,14 @@ export const queries = defineQueries({
       .one();
   }),
   events: defineQuery(clubSchema, ({ args, ctx }) => {
-    let q = builder.event.where("clubId", args.clubId);
+    let q = zql.event.where("clubId", args.clubId);
     if (ctx.type === "public" || ctx.type === "account") {
       q = q.where("visibility", "=", "public");
     }
     return q.related("club").limit(20);
   }),
   event: defineQuery(z.object({ id: z.string() }), ({ args, ctx }) => {
-    let q = builder.event
+    let q = zql.event
       .where("id", args.id)
       .where(({ or, cmp, exists }) =>
         or(

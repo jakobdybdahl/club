@@ -210,7 +210,7 @@ export const schema = createSchema({
   enableLegacyQueries: false,
 });
 
-export const builder = createBuilder(schema);
+export const zql = createBuilder(schema);
 
 export type Schema = typeof schema;
 
