@@ -16,7 +16,6 @@ const ActorType: {
 
 export const PublicActor = z.object({
   type: z.literal(ActorType.Public),
-  // properties: z.object({}),
 });
 export type PublicActor = z.infer<typeof PublicActor>;
 
@@ -90,7 +89,4 @@ export const useActorId = () => {
   }
 };
 
-export const useUserId = () => {
-  const user = assertActor("user");
-  return user.properties.userId;
-};
+export const useUserId = () => assertActor("user").properties.userId;

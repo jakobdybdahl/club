@@ -18,7 +18,7 @@ import { club } from "./club.sql";
 export const Events = {
   Created: createEvent(
     "club.created",
-    z.object({ workspaceId: z.string().nonempty() })
+    z.object({ clubId: z.string().nonempty() }),
   ),
 };
 
@@ -59,11 +59,11 @@ export const create = zod(
       }
 
       await createTransactionEffect(() =>
-        bus.publish(Resource.Bus, Events.Created, { workspaceId: id })
+        bus.publish(Resource.Bus, Events.Created, { clubId: id }),
       );
 
       return id;
-    })
+    }),
 );
 
 export const fromId = zod(Info.shape.id, (id) => {
@@ -87,16 +87,16 @@ export const fromSlug = zod(Info.shape.slug, (slug) => {
   });
 });
 
-export const UpdateWorkspaceSchema = Info.pick({
+export const UpdateClubSchema = Info.pick({
   name: true,
   shortCode: true,
 });
 
-export type UpdateWorkspaceInput = z.infer<typeof UpdateWorkspaceSchema>;
+export type UpdateClubInput = z.infer<typeof UpdateClubSchema>;
 
 export const update = withPermission(
   "admin",
-  zod(UpdateWorkspaceSchema, (input) => {
+  zod(UpdateClubSchema, (input) => {
     return useTransaction(async (tx) => {
       await tx
         .update(club)
@@ -107,5 +107,5 @@ export const update = withPermission(
         })
         .where(eq(club.id, useWorkspace()));
     });
-  })
+  }),
 );

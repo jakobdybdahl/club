@@ -23,7 +23,7 @@ export const coerceBoolean = z
   .enum(["0", "1", "true", "false"])
   .optional()
   .transform((value) =>
-    value !== undefined ? value == "true" || value == "1" : undefined
+    value !== undefined ? value == "true" || value == "1" : undefined,
   );
 
 export type Select = {
@@ -37,7 +37,7 @@ export const parseSelect = (input: string[]): Partial<Select> => {
     include: [],
   };
   input.forEach((v) =>
-    v.startsWith("!") ? res.exclude.push(v.substring(1)) : res.include.push(v)
+    v.startsWith("!") ? res.exclude.push(v.substring(1)) : res.include.push(v),
   );
   if (res.exclude.length && res.include.length) {
     res.include = res.include.filter((v) => !res.exclude.includes(v));
@@ -61,8 +61,6 @@ export const selectSchema = z.object({
     }),
 });
 
-type SelectSchemaInput = z.input<typeof selectSchema>;
-
 export const selectQueryParamSchema = z
   .string()
   .trim()
@@ -71,7 +69,7 @@ export const selectQueryParamSchema = z
     z
       .array(z.string().trim())
       .transform((v) => parseSelect(v))
-      .pipe(selectSchema)
+      .pipe(selectSchema),
   );
 
 export const bignumber = {

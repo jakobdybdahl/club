@@ -25,7 +25,7 @@ export const create = zod(
       const id = input.id ?? nanoid();
       await tx.insert(account).values({ id, email: input.email });
       return id;
-    })
+    }),
 );
 
 export const fromID = zod(Info.shape.id, async (id) =>
@@ -36,7 +36,7 @@ export const fromID = zod(Info.shape.id, async (id) =>
       .where(eq(account.id, id))
       .execute()
       .then((rows) => rows[0]);
-  })
+  }),
 );
 
 export const fromEmail = zod(Info.shape.email, async (email) =>
@@ -47,7 +47,7 @@ export const fromEmail = zod(Info.shape.email, async (email) =>
       .where(eq(account.email, email))
       .execute()
       .then((rows) => rows[0]);
-  })
+  }),
 );
 
 export const clubs = () => {
@@ -61,8 +61,8 @@ export const clubs = () => {
         and(
           eq(user.email, actor.properties.email),
           isNull(user.timeDeleted),
-          isNull(club.timeDeleted)
-        )
+          isNull(club.timeDeleted),
+        ),
       );
     return result.map((res) => ({
       ...res.club,
