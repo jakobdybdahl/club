@@ -33,11 +33,11 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
             new Request(request, {
               ...init,
               headers,
-            })
+            }),
           );
         },
       }),
-    [club, auth]
+    [club, auth],
   );
 
   return (

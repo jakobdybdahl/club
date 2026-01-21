@@ -1,4 +1,4 @@
-import { editorTheme } from "@club/ui/editor";
+import { editorTheme } from "@club/ui/components/editor";
 import {
   InitialConfigType,
   LexicalComposer,
@@ -25,7 +25,7 @@ export function Renderer({
         onError: (err) => console.log(err),
         editable: false,
         theme: editorTheme,
-      } satisfies InitialConfigType)
+      }) satisfies InitialConfigType,
   );
   return (
     <div className={className}>

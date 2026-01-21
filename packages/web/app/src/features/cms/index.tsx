@@ -11,7 +11,7 @@ import { NotFound } from "../error-pages";
 import { Menu } from "./components/menu";
 import { PageRouter } from "./components/page";
 
-type CmsQuery = NonNullable<QueryResultType<typeof queries.cmsBySlug>>;
+type CmsQuery = NonNullable<QueryResultType<typeof queries.cms>>;
 
 export function CmsPage({ config }: { config: CmsQuery }) {
   const menu = useMemo(() => {

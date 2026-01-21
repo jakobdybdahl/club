@@ -1,5 +1,6 @@
-import { SidebarInset, SidebarProvider, Toaster } from "@club/ui";
-import { ThemeProvider } from "@club/ui/providers";
+import { SidebarInset, SidebarProvider } from "@club/ui/components/sidebar";
+import { Toaster } from "@club/ui/components/sonner";
+import { ThemeProvider } from "@club/ui/providers/theme-provider";
 import { queries } from "@club/zero/queries";
 import { useQuery } from "@rocicorp/zero/react";
 import { useMemo } from "react";
@@ -33,7 +34,10 @@ function CmsRoute() {
       if (splits.length !== 2) {
         throw new Error("Expected two parts of hostname");
       }
-      const slug = splits[0].slice(0, -1); // remove trailing '.'
+      const slug = splits[0]?.slice(0, -1); // remove trailing '.'
+      if (!slug) {
+        throw new Error("Expected slug to be defined");
+      }
       return {
         value: slug,
         type: "slug" as const,

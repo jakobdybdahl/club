@@ -2,27 +2,42 @@ import { useClub } from "@/features/club/context";
 import { useApi } from "@/providers/api";
 import { Widget, WidgetOfType, WidgetType } from "@club/core/cms/page/schema";
 import { MaybePromise, Prettify } from "@club/core/util/types";
+import { Button } from "@club/ui/components/button";
 import {
-  Button,
   ButtonIdle,
   ButtonLoader,
   ButtonLoading,
-  cn,
-  Menu,
-  MenuItem,
-  MenuPopup,
-  MenuPortal,
-  MenuPositioner,
-  MenuTrigger,
-  Spinner,
-  toast,
-} from "@club/ui";
-import { Editor, SerializedEditorState } from "@club/ui/editor";
+} from "@club/ui/components/button-loader";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@club/ui/components/dropdown-menu";
+import { Editor, SerializedEditorState } from "@club/ui/components/editor";
+import { Spinner } from "@club/ui/components/spinner";
+import { cn } from "@club/ui/lib/utils";
 import { generateKeyBetween } from "fractional-indexing";
 import { PlusIcon } from "lucide-react";
 import { nanoid } from "nanoid";
 import { JSX, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router";
+import { toast } from "sonner";
+// import {
+//   Button,
+//   ButtonIdle,
+//   ButtonLoader,
+//   ButtonLoading,
+//   cn,
+//   Menu,
+//   MenuItem,
+//   MenuPopup,
+//   MenuPortal,
+//   MenuPositioner,
+//   MenuTrigger,
+//   Spinner,
+//   toast,
+// } from "../../../../../ui-1/src";
 
 type Input<T extends WidgetType> = Prettify<
   Omit<Extract<Widget, { type: T }>, "id" | "order" | "type">
@@ -173,7 +188,7 @@ function ImageWidget(props: WidgetComponentProps<"image">) {
         <ButtonLoader isLoading={isLoading} onClick={() => void handleSubmit()}>
           <ButtonIdle>Add</ButtonIdle>
           <ButtonLoading>
-            <Spinner size="sm" />
+            <Spinner />
           </ButtonLoading>
         </ButtonLoader>
       </div>
@@ -196,7 +211,7 @@ type WidgetComponentProps<T extends WidgetType> = {
 };
 
 type WidgetComponent<T extends WidgetType> = (
-  props: WidgetComponentProps<T>
+  props: WidgetComponentProps<T>,
 ) => JSX.Element;
 
 const WidgetMap: {
@@ -288,8 +303,8 @@ export function AddWidget({
 
   return (
     <div className={cn("w-full flex justify-center", className)}>
-      <Menu>
-        <MenuTrigger
+      <DropdownMenu>
+        <DropdownMenuTrigger
           render={
             <Button
               size="sm"
@@ -301,18 +316,18 @@ export function AddWidget({
             </Button>
           }
         />
-        <MenuPortal>
-          <MenuPositioner sideOffset={4}>
-            <MenuPopup>
-              <MenuItem onClick={() => initAdd("rich-text")}>
-                Rich text
-              </MenuItem>
-              <MenuItem onClick={() => initAdd("image")}>Image</MenuItem>
-              <MenuItem onClick={() => initAdd("events")}>Event list</MenuItem>
-            </MenuPopup>
-          </MenuPositioner>
-        </MenuPortal>
-      </Menu>
+        <DropdownMenuContent sideOffset={4}>
+          <DropdownMenuItem onClick={() => initAdd("rich-text")}>
+            Rich text
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => initAdd("image")}>
+            Image
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => initAdd("events")}>
+            Event list
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

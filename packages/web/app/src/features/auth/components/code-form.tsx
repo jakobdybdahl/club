@@ -1,3 +1,5 @@
+import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   cn,
   IconApp,
@@ -6,9 +8,7 @@ import {
   InputOTPSlot,
   REGEXP_ONLY_DIGITS,
   Spinner,
-} from "@club/ui";
-import { useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
+} from "../../../../../ui-1/src";
 
 export const CodeForm = ({
   className,

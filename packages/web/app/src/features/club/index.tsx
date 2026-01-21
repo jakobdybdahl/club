@@ -2,29 +2,41 @@
 import { TimeAgo } from "@/components/ui/time-ago";
 import { useAccount } from "@/providers/account";
 import { PermissionProvider } from "@/providers/permissions";
-import { useZero } from "@/providers/zero";
+// import { useZero } from "@/providers/zero";
 import {
-  Button,
   Dialog,
   DialogPopup,
   DialogPortalWithOverlay,
   DialogTopbar,
   DialogTopbarLabel,
-  Form,
-  FormControl,
-  FormField,
-  Separator,
-  Textarea,
-} from "@club/ui";
+} from "@club/ui/components/dialog";
+import { Field } from "@club/ui/components/field";
+import { Textarea } from "@club/ui/components/textarea";
 import { queries } from "@club/zero/queries";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@rocicorp/zero/react";
+import { useQuery, useZero } from "@rocicorp/zero/react";
 import { ChevronRight } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Navigate, Route, Routes, useParams } from "react-router";
 import { z } from "zod";
+// import {
+//   Button,
+//   Dialog,
+//   DialogPopup,
+//   DialogPortalWithOverlay,
+//   DialogTopbar,
+//   DialogTopbarLabel,
+//   Form,
+//   FormControl,
+//   FormField,
+//   Separator,
+//   Textarea,
+// } from "../../../../ui-1/src";
+import { mutators } from "@/providers/zero/mutators";
+import { Button } from "@club/ui/components/button";
+import { Separator } from "@club/ui/components/separator";
 import { NotFound } from "../error-pages";
 import { ClubContext, useClub, useUser } from "./context";
 
@@ -42,27 +54,31 @@ const InviteMemberDialog = () => {
   const club = useClub();
   const z = useZero();
 
-  const form = useForm({
+  const form = useForm<
+    z.input<typeof inviteSchema>,
+    unknown,
+    z.output<typeof inviteSchema>
+  >({
     resolver: zodResolver(inviteSchema),
     defaultValues: {
       emails: "",
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof inviteSchema>) => {
-    console.log({ data, user });
+  const onSubmit = (data: z.infer<typeof inviteSchema>) => {
     if (!user) return;
     const now = Date.now();
     for (const email of data.emails) {
-      console.log("creating", email);
-      z.mutate.user.create({
-        clubId: club.id,
-        email,
-        id: nanoid(),
-        timeCreated: now,
-        timeUpdated: now,
-        actorId: user.id,
-      });
+      z.mutate(
+        mutators.user.create({
+          clubId: club.id,
+          email,
+          id: nanoid(),
+          timeCreated: now,
+          timeUpdated: now,
+          actorId: user.id,
+        }),
+      );
     }
   };
 
@@ -75,24 +91,26 @@ const InviteMemberDialog = () => {
       </DialogTopbar>
       <Separator />
       <div className="p-4">
-        <Form {...form}>
-          <FormField
+        <form id="form-invite-user" onSubmit={form.handleSubmit(onSubmit)}>
+          <Controller
             control={form.control}
             name="emails"
-            render={({ field }) => (
-              <FormControl>
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
                 <Textarea
                   {...field}
+                  id="form-invite-user-emails"
+                  aria-invalid={fieldState.invalid}
                   placeholder="john@example.com, sophie@example.com"
                 />
-              </FormControl>
+              </Field>
             )}
           />
-        </Form>
+        </form>
       </div>
       <Separator />
       <div className="p-4 flex justify-end">
-        <Button onClick={() => void form.handleSubmit(handleSubmit)()}>
+        <Button onClick={() => void form.handleSubmit(onSubmit)()}>
           Invite
         </Button>
       </div>
@@ -106,7 +124,7 @@ const ClubPage = () => {
 
   const sortedUsers = useMemo(
     () => club.users.toSorted((a, b) => a.timeCreated - b.timeCreated),
-    [club.users]
+    [club.users],
   );
 
   return (
@@ -151,8 +169,9 @@ export const ClubRoute = () => {
   if (!slug) return <Navigate to="/" />;
 
   const [club, { type }] = useQuery(
-    queries.club(
-      account.current
+    queries.clubBySlug({ slug: slug }).query.fn({
+      args: { slug },
+      ctx: account.current
         ? {
             type: "account",
             properties: {
@@ -161,8 +180,7 @@ export const ClubRoute = () => {
             },
           }
         : { type: "public" },
-      { slug }
-    )
+    }),
   );
 
   if (!club && type === "unknown") return null;

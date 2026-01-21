@@ -1,7 +1,6 @@
-import { Slot } from "@radix-ui/react-slot";
-import { useEffect, useState } from "react";
-import { cn } from "../util";
-import { Button } from "./button";
+import { Button } from "@club/ui/components/button";
+import { cn } from "@club/ui/lib/utils";
+import React, { useEffect, useState } from "react";
 
 function ButtonLoader({
   isLoading: externalIsLoading,
@@ -19,7 +18,7 @@ function ButtonLoader({
     <Button
       className={cn(
         'group grid [grid-template-areas:"stack"] justify-items-center',
-        className
+        className,
       )}
       data-loading={isLoading}
       {...props}
@@ -30,37 +29,39 @@ function ButtonLoader({
 }
 
 function ButtonIdle({
-  asChild,
-  className,
+  render,
   ...props
-}: { asChild?: boolean } & React.ComponentProps<"span">) {
-  const Comp = asChild ? Slot : "span";
-  return (
-    <Comp
+}: React.ComponentProps<"span"> & { render?: React.ReactElement }) {
+  const element = render ? (
+    React.cloneElement(render, props)
+  ) : (
+    <span
+      {...props}
       className={cn(
         "[grid-area:stack] group-data-[loading=true]:opacity-0",
-        className
+        props.className,
       )}
-      {...props}
     />
   );
+  return <React.Fragment>{element}</React.Fragment>;
 }
 
 function ButtonLoading({
-  asChild,
-  className,
+  render,
   ...props
-}: { asChild?: boolean } & React.ComponentProps<"span">) {
-  const Comp = asChild ? Slot : "span";
-  return (
-    <Comp
+}: React.ComponentProps<"span"> & { render?: React.ReactElement }) {
+  const element = render ? (
+    React.cloneElement(render, props)
+  ) : (
+    <span
+      {...props}
       className={cn(
         "[grid-area:stack] opacity-0 group-data-[loading=true]:opacity-100",
-        className
+        props.className,
       )}
-      {...props}
     />
   );
+  return <React.Fragment>{element}</React.Fragment>;
 }
 
 export { ButtonIdle, ButtonLoader, ButtonLoading };

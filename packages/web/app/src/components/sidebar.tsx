@@ -1,11 +1,10 @@
+import { Dialog, DialogContent } from "@club/ui/components/dialog";
 import {
-  cn,
-  Dialog,
-  DialogContent,
   DropdownMenu,
   DropdownMenuTrigger,
-  Kbd,
-  Mod,
+} from "@club/ui/components/dropdown-menu";
+import { Kbd, Mod } from "@club/ui/components/kbd";
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -16,7 +15,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@club/ui";
+} from "@club/ui/components/sidebar";
+import { cn } from "@club/ui/lib/utils";
 import {
   Building2Icon,
   CalendarIcon,
@@ -65,28 +65,34 @@ function PersonalNav() {
           </SidebarMenuButton>
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <SidebarMenuButton asChild>
-            <Link to="/">
-              <HomeIcon />
-              <span>Home</span>
-            </Link>
-          </SidebarMenuButton>
+          <SidebarMenuButton
+            render={
+              <Link to="/">
+                <HomeIcon />
+                <span>Home</span>
+              </Link>
+            }
+          />
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <SidebarMenuButton asChild>
-            <Link to="/events">
-              <CalendarIcon />
-              <span>Events</span>
-            </Link>
-          </SidebarMenuButton>
+          <SidebarMenuButton
+            render={
+              <Link to="/events">
+                <CalendarIcon />
+                <span>Events</span>
+              </Link>
+            }
+          />
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <SidebarMenuButton asChild>
-            <Link to="/inbox">
-              <InboxIcon />
-              <span>Inbox</span>
-            </Link>
-          </SidebarMenuButton>
+          <SidebarMenuButton
+            render={
+              <Link to="/inbox">
+                <InboxIcon />
+                <span>Inbox</span>
+              </Link>
+            }
+          />
         </SidebarMenuItem>
       </SidebarMenu>
       <Dialog open={showSearchDialog} onOpenChange={setShowSearchDialog}>
@@ -105,12 +111,14 @@ function FavoritesNav() {
       <SidebarMenu>
         {Array.from({ length: 3 }).map((_, i) => (
           <SidebarMenuItem key={i}>
-            <SidebarMenuButton asChild>
-              <Link to="/c/odder-cykel-klub" className="truncate">
-                <StarIcon />
-                Odder Cykel Klub
-              </Link>
-            </SidebarMenuButton>
+            <SidebarMenuButton
+              render={
+                <Link to="/c/odder-cykel-klub" className="truncate">
+                  <StarIcon />
+                  Odder Cykel Klub
+                </Link>
+              }
+            />
           </SidebarMenuItem>
         ))}
       </SidebarMenu>
@@ -124,28 +132,34 @@ function ExploreNav() {
       <SidebarGroupLabel>Explore</SidebarGroupLabel>
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton asChild>
-            <Link to="/explore/clubs">
-              <Building2Icon />
-              <span>Clubs</span>
-            </Link>
-          </SidebarMenuButton>
+          <SidebarMenuButton
+            render={
+              <Link to="/explore/clubs">
+                <Building2Icon />
+                <span>Clubs</span>
+              </Link>
+            }
+          />
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <SidebarMenuButton asChild>
-            <Link to="/explore/events">
-              <CalendarSearchIcon />
-              <span>Events</span>
-            </Link>
-          </SidebarMenuButton>
+          <SidebarMenuButton
+            render={
+              <Link to="/explore/events">
+                <CalendarSearchIcon />
+                <span>Events</span>
+              </Link>
+            }
+          />
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <SidebarMenuButton asChild>
-            <Link to="/explore/users">
-              <UsersIcon />
-              <span>Users</span>
-            </Link>
-          </SidebarMenuButton>
+          <SidebarMenuButton
+            render={
+              <Link to="/explore/users">
+                <UsersIcon />
+                <span>Users</span>
+              </Link>
+            }
+          />
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>
@@ -192,20 +206,22 @@ function AccountSwitcher() {
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-blue-700/20 data-[state=open]:text-sidebar-accent-foreground border border-blue-800/40 bg-blue-700/10 gap-3 hover:bg-blue-700/20!"
-            >
-              <div className="rounded-lg size-8 flex items-center justify-center bg-blue-700 aspect-square">
-                <UserCircleIcon className="size-5" />
-              </div>
-              <div className="flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">My account</span>
-              </div>
-              <ChevronsUpDownIcon className="text-muted-foreground" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-blue-700/20 data-[state=open]:text-sidebar-accent-foreground border border-blue-800/40 bg-blue-700/10 gap-3 hover:bg-blue-700/20!"
+              >
+                <div className="rounded-lg size-8 flex items-center justify-center bg-blue-700 aspect-square">
+                  <UserCircleIcon className="size-5" />
+                </div>
+                <div className="flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">My account</span>
+                </div>
+                <ChevronsUpDownIcon className="text-muted-foreground" />
+              </SidebarMenuButton>
+            }
+          />
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
@@ -217,20 +233,22 @@ function SignInItem() {
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground gap-3"
-            >
-              <div className="rounded-lg size-8 flex items-center justify-center bg-white/80 aspect-square">
-                <LogInIcon className="size-5 text-background" />
-              </div>
-              <div className="flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">Sign in</span>
-              </div>
-              <ChevronRightIcon />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground gap-3"
+              >
+                <div className="rounded-lg size-8 flex items-center justify-center bg-white/80 aspect-square">
+                  <LogInIcon className="size-5 text-background" />
+                </div>
+                <div className="flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">Sign in</span>
+                </div>
+                <ChevronRightIcon />
+              </SidebarMenuButton>
+            }
+          />
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>

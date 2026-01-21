@@ -1,6 +1,6 @@
-import { Button, cn, IconApp, Input, Label } from "@club/ui";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button, cn, IconApp, Input, Label } from "../../../../../ui-1/src";
 
 export function EmailForm({
   className,

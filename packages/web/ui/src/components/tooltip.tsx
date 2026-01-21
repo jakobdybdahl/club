@@ -1,112 +1,73 @@
-import { Tooltip as TooltipPrimitive } from "@base-ui-components/react";
-import * as React from "react";
+import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 
-import { cn } from "../util";
-import { ArrowSvg } from "./arrow-svg";
-import { Kbd } from "./kbd";
+import { cn } from "@club/ui/lib/utils";
 
-const TooltipRoot = TooltipPrimitive.Root;
-const TooltipProvider = TooltipPrimitive.Provider;
-const TooltipPortal = TooltipPrimitive.Portal;
-const TooltipPositioner = TooltipPrimitive.Positioner;
-const TooltipTrigger = TooltipPrimitive.Trigger;
-
-function TooltipPopup({
-  className,
+function TooltipProvider({
+  delay = 0,
   ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Popup>) {
+}: TooltipPrimitive.Provider.Props) {
   return (
-    <TooltipPrimitive.Popup
-      className={cn(
-        "flex origin-[var(--transform-origin)] flex-col rounded-md bg-popover px-2 py-1 text-sm shadow-lg border transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[instant]:duration-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0 dark:shadow-none",
-        className
-      )}
+    <TooltipPrimitive.Provider
+      data-slot="tooltip-provider"
+      delay={delay}
       {...props}
     />
   );
 }
 
-function TooltipArrow({
-  className,
-  ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Arrow>) {
+function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
   return (
-    <TooltipPrimitive.Arrow
-      className={cn(
-        "data-[side=bottom]:top-[-8px] data-[side=left]:right-[-13px] data-[side=left]:rotate-90 data-[side=right]:left-[-13px] data-[side=right]:-rotate-90 data-[side=top]:bottom-[-8px] data-[side=top]:rotate-180",
-        className
-      )}
-      {...props}
-    />
+    <TooltipProvider>
+      <TooltipPrimitive.Root data-slot="tooltip" {...props} />
+    </TooltipProvider>
   );
+}
+
+function TooltipTrigger({ ...props }: TooltipPrimitive.Trigger.Props) {
+  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
 }
 
 function TooltipContent({
-  children,
   className,
-  side,
-  align,
-  hidden,
-}: { children: React.ReactNode; hidden?: boolean; className?: string } & Pick<
-  React.ComponentProps<typeof TooltipPositioner>,
-  "side" | "align"
->) {
+  side = "top",
+  sideOffset = 4,
+  align = "center",
+  alignOffset = 0,
+  showArrow = true,
+  children,
+  ...props
+}: TooltipPrimitive.Popup.Props &
+  Pick<
+    TooltipPrimitive.Positioner.Props,
+    "align" | "alignOffset" | "side" | "sideOffset"
+  > & {
+    showArrow?: boolean;
+  }) {
   return (
-    <TooltipPortal>
-      <TooltipPositioner sideOffset={8} side={side} align={align}>
-        <TooltipPopup hidden={hidden} className={className}>
-          <TooltipArrow>
-            <ArrowSvg />
-          </TooltipArrow>
+    <TooltipPrimitive.Portal>
+      <TooltipPrimitive.Positioner
+        align={align}
+        alignOffset={alignOffset}
+        side={side}
+        sideOffset={sideOffset}
+        className="isolate z-50"
+      >
+        <TooltipPrimitive.Popup
+          data-slot="tooltip-content"
+          className={cn(
+            "data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 rounded-none px-3 py-1.5 text-xs bg-foreground text-background z-50 w-fit max-w-xs origin-(--transform-origin)",
+            className,
+          )}
+          {...props}
+        >
           {children}
-        </TooltipPopup>
-      </TooltipPositioner>
-    </TooltipPortal>
+          {showArrow && (
+            <TooltipPrimitive.Arrow className="size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-none bg-foreground fill-foreground z-50 data-[side=bottom]:top-1 data-[side=left]:top-1/2! data-[side=left]:-right-1 data-[side=left]:-translate-y-1/2 data-[side=right]:top-1/2! data-[side=right]:-left-1 data-[side=right]:-translate-y-1/2 data-[side=top]:-bottom-2.5" />
+          )}
+        </TooltipPrimitive.Popup>
+      </TooltipPrimitive.Positioner>
+    </TooltipPrimitive.Portal>
   );
 }
 
-const HotkeyTooltip = (props: {
-  children: React.ReactNode;
-  hotkey: string;
-  label?: string;
-  disabled?: boolean;
-}) => {
-  const keys = React.useMemo(
-    () => (props.hotkey !== "" ? props.hotkey.split("+") : []),
-    [props.hotkey]
-  );
-  return (
-    <TooltipRoot disabled={props.disabled}>
-      {props.children}
-      <TooltipPortal>
-        <TooltipPositioner sideOffset={4}>
-          <TooltipPopup>
-            <div className="flex gap-2 items-center">
-              {props.label && <div className="text-sm">{props.label}</div>}
-              {keys.length > 0 && (
-                <div className="flex gap-1">
-                  {keys.map((key) => (
-                    <Kbd key={key} maybeMod>
-                      {key}
-                    </Kbd>
-                  ))}
-                </div>
-              )}
-            </div>
-          </TooltipPopup>
-        </TooltipPositioner>
-      </TooltipPortal>
-    </TooltipRoot>
-  );
-};
-
-export {
-  HotkeyTooltip,
-  TooltipArrow,
-  TooltipContent,
-  TooltipPopup,
-  TooltipPortal,
-  TooltipProvider,
-  TooltipRoot,
-  TooltipTrigger,
-};
+export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger };

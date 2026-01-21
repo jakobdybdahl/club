@@ -1,3 +1,10 @@
+import { Kbd } from "@club/ui/components/kbd";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@club/ui/components/tooltip";
 import { $isTableSelection } from "@lexical/table";
 import {
   $isRangeSelection,
@@ -13,9 +20,9 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "../../../toggle-group";
-import { HotkeyTooltip, TooltipTrigger } from "../../../tooltip";
 import { useToolbarContext } from "../../context/toolbar-context";
 import { useUpdateToolbarHandler } from "../../editor-hooks/use-update-toolbar";
+import { Hotkey, HotkeyKbdGroup, HotkeyLabel } from "./hotkey-tooltip";
 
 const FORMATS = [
   { format: "bold", icon: BoldIcon, label: "Bold", hotkey: "mod+b" },
@@ -62,31 +69,45 @@ export function FontFormatToolbarPlugin() {
   useUpdateToolbarHandler($updateToolbar);
 
   return (
-    <ToggleGroup
-      multiple
-      value={activeFormats}
-      onValueChange={setActiveFormats}
-      variant="outline"
-      size="sm"
-    >
-      {FORMATS.map(({ format, icon: Icon, label, hotkey }) => (
-        <HotkeyTooltip hotkey={hotkey ?? ""} key={format} label={label}>
-          <TooltipTrigger
-            render={
-              <ToggleGroupItem
-                value={format}
-                aria-label={label}
-                onClick={() =>
-                  editor.dispatchCommand(FORMAT_TEXT_COMMAND, format)
-                }
-                className="px-2"
-              >
-                <Icon className="size-3.5" />
-              </ToggleGroupItem>
-            }
-          />
-        </HotkeyTooltip>
-      ))}
-    </ToggleGroup>
+    <TooltipProvider>
+      <ToggleGroup
+        multiple
+        value={activeFormats}
+        onValueChange={setActiveFormats}
+        variant="outline"
+        size="sm"
+      >
+        {FORMATS.map(({ format, icon: Icon, label, hotkey }) => (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <ToggleGroupItem
+                  value={format}
+                  aria-label={label}
+                  onClick={() =>
+                    editor.dispatchCommand(FORMAT_TEXT_COMMAND, format)
+                  }
+                  className="px-2"
+                >
+                  <Icon className="size-3.5" />
+                </ToggleGroupItem>
+              }
+            />
+            <TooltipContent>
+              <Hotkey>
+                <HotkeyLabel>{label}</HotkeyLabel>
+                {hotkey && (
+                  <HotkeyKbdGroup>
+                    {hotkey.split("+").map((key) => (
+                      <Kbd maybeMod>{key}</Kbd>
+                    ))}
+                  </HotkeyKbdGroup>
+                )}
+              </Hotkey>
+            </TooltipContent>
+          </Tooltip>
+        ))}
+      </ToggleGroup>
+    </TooltipProvider>
   );
 }

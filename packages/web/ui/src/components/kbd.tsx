@@ -1,6 +1,6 @@
+import { cn, getOS, OS } from "@club/ui/lib/utils";
 import { ArrowBigUp, CommandIcon, DeleteIcon, OptionIcon } from "lucide-react";
 import { useState } from "react";
-import { cn, getOS, OS } from "../util";
 
 type Modifier = "shift" | "mod" | "alt" | "backspace";
 
@@ -39,19 +39,20 @@ function Mod({
 
 function Kbd({
   className,
-  children,
   maybeMod,
+  children,
   ...props
-}: { maybeMod?: boolean } & React.ComponentProps<"kbd">) {
+}: React.ComponentProps<"kbd"> & { maybeMod?: boolean }) {
   if (maybeMod && typeof children === "string" && children in modifiers) {
     return <Mod mod={children as Modifier} />;
   }
 
   return (
     <kbd
+      data-slot="kbd"
       className={cn(
-        "bg-background dark:bg-foreground/5 text-foreground/70 pointer-events-none leading-none flex h-5 items-center justify-center gap-1 rounded border has-[svg]:px-0.5 not-has-[svg]:px-1 font-sans text-[0.7rem] font-semibold select-none [&_svg:not([class*='size-'])]:size-3.5 [&_svg:not([class*='size-'])]:min-w-3.5 uppercase",
-        className
+        "bg-muted text-muted-foreground [[data-slot=tooltip-content]_&]:bg-background/20 [[data-slot=tooltip-content]_&]:text-background dark:[[data-slot=tooltip-content]_&]:bg-background/10 h-5 w-fit min-w-5 gap-1 rounded-none px-1 font-sans text-xs font-medium [&_svg:not([class*='size-'])]:size-3 pointer-events-none inline-flex items-center justify-center select-none",
+        className,
       )}
       {...props}
     >
@@ -60,5 +61,14 @@ function Kbd({
   );
 }
 
-export { Kbd, Mod };
-export type { Modifier };
+function KbdGroup({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <kbd
+      data-slot="kbd-group"
+      className={cn("gap-1 inline-flex items-center", className)}
+      {...props}
+    />
+  );
+}
+
+export { Kbd, KbdGroup, Mod };

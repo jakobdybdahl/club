@@ -42,7 +42,7 @@ const STORAGE_PREFIX = "app.auth";
 
 function usePersistedState<T>(
   key: string,
-  initialState: T
+  initialState: T,
 ): [T, Dispatch<SetStateAction<T>>] {
   const [state, setState] = useState<T>(() => {
     try {
@@ -137,24 +137,24 @@ export function AuthProvider(props: AuthContextOpts) {
   const authorize = useCallback(
     async (redirectPath?: string) => {
       const redirect = new URL(
-        window.location.origin + (redirectPath ?? "/")
+        window.location.origin + (redirectPath ?? "/"),
       ).toString();
       const authorize = await client.authorize(redirect, "code", {
         pkce: true,
       });
       sessionStorage.setItem(
         `${STORAGE_PREFIX}.state`,
-        authorize.challenge.state
+        authorize.challenge.state,
       );
       sessionStorage.setItem(`${STORAGE_PREFIX}.redirect`, redirect);
       if (authorize.challenge.verifier)
         sessionStorage.setItem(
           `${STORAGE_PREFIX}.verifier`,
-          authorize.challenge.verifier
+          authorize.challenge.verifier,
         );
       window.location.href = authorize.url;
     },
-    [client]
+    [client],
   );
 
   const accessCache = useMemo(() => new Map<string, string>(), []);
@@ -171,7 +171,7 @@ export function AuthProvider(props: AuthContextOpts) {
         try {
           const subject = storage.subjects[id];
           const existing = accessCache.get(id);
-          const access = await client.refresh(subject.refresh, {
+          const access = await client.refresh(subject!.refresh, {
             access: existing,
           });
           if (access.err) {
@@ -187,7 +187,7 @@ export function AuthProvider(props: AuthContextOpts) {
               subjects: {
                 ...prev.subjects,
                 [id]: {
-                  ...prev.subjects[id],
+                  ...prev.subjects[id]!,
                   refresh: tokens.refresh,
                 },
               },
@@ -203,7 +203,7 @@ export function AuthProvider(props: AuthContextOpts) {
       pendingRequests.set(id, request);
       return request;
     },
-    [client, storage.subjects, accessCache, pendingRequests]
+    [client, storage.subjects, accessCache, pendingRequests],
   );
 
   const ctx: Context = {

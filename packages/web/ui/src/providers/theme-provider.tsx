@@ -14,28 +14,24 @@ type ThemeActions = {
   setSyncWithSystem: (syncWithSystem: boolean) => void;
 };
 
-const themingIsDisabled = false;
-
 const initialState: ThemeState = {
   syncWithSystem: true,
-  theme:
-    !themingIsDisabled &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light",
+  theme: window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light",
 };
 
 export const useThemeStore = create<ThemeState & ThemeActions>()(
   persist(
     (set) => ({
       ...initialState,
-      setTheme: (theme) => set({ theme: themingIsDisabled ? "light" : theme }),
+      setTheme: (theme) => set({ theme }),
       setSyncWithSystem: (syncWithSystem) => set({ syncWithSystem }),
     }),
     {
       name: "px.theme",
-    }
-  )
+    },
+  ),
 );
 
 const useThemeDetector = () => {
@@ -86,20 +82,6 @@ export const ThemeProvider = ({
   return children;
 };
 
-export const ThemeSelector = () => {
-  const { theme, setTheme } = useThemeStore((state) => ({
-    ...state,
-  }));
-
-  const otherTheme: Theme = theme === "light" ? "dark" : "light";
-
-  const toggleTheme = () => {
-    setTheme(otherTheme);
-  };
-
-  return <div onClick={toggleTheme}>{otherTheme}</div>;
-};
-
-export const useTheme = (): Theme => {
-  return useThemeStore((state) => state.theme);
+export const useTheme = () => {
+  return useThemeStore((state) => [state.theme, state.setTheme] as const);
 };

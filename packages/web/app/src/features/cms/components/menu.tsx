@@ -6,22 +6,18 @@ import {
   ButtonIdle,
   ButtonLoader,
   ButtonLoading,
-  cn,
-  NavigationMenuArrow,
+} from "@club/ui/components/button-loader";
+import {
+  NavigationMenu,
   NavigationMenuContent,
-  NavigationMenuIcon,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuPopup,
-  NavigationMenuPortal,
-  NavigationMenuPositioner,
-  NavigationMenuRoot,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-  NavigationMenuViewport,
-  Spinner,
-} from "@club/ui";
+} from "@club/ui/components/navigation-menu";
+import { Spinner } from "@club/ui/components/spinner";
+import { cn } from "@club/ui/lib/utils";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -67,10 +63,7 @@ type ItemWithType<T extends Item["type"]> = Extract<
 function MenuGroup({ item }: { item: GroupItem }) {
   return (
     <NavigationMenuItem>
-      <NavigationMenuTrigger>
-        {item.label}
-        <NavigationMenuIcon />
-      </NavigationMenuTrigger>
+      <NavigationMenuTrigger>{item.label}</NavigationMenuTrigger>
       <NavigationMenuContent>
         <ul
           className={cn("list-none", item.layout === "list" ? "" : "columns-2")}
@@ -167,7 +160,7 @@ function SignInButton() {
       >
         <ButtonIdle>Sign in</ButtonIdle>
         <ButtonLoading>
-          <Spinner size="sm" />
+          <Spinner />
         </ButtonLoading>
       </ButtonLoader>
     </NavigationMenuItem>
@@ -176,21 +169,13 @@ function SignInButton() {
 
 export function Menu({ items }: { items: ItemTree<Item>[] }) {
   return (
-    <NavigationMenuRoot className="max-w-max p-1 rounded-lg">
+    <NavigationMenu className="max-w-max p-1 rounded-lg">
       <NavigationMenuList className="relative flex items-center gap-1">
         {items.map((item) => (
           <MenuItem key={item.id} item={item} />
         ))}
         <SignInButton />
       </NavigationMenuList>
-      <NavigationMenuPortal>
-        <NavigationMenuPositioner>
-          <NavigationMenuPopup>
-            <NavigationMenuArrow />
-            <NavigationMenuViewport />
-          </NavigationMenuPopup>
-        </NavigationMenuPositioner>
-      </NavigationMenuPortal>
-    </NavigationMenuRoot>
+    </NavigationMenu>
   );
 }

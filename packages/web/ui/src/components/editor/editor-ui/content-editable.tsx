@@ -1,5 +1,5 @@
+import { cn } from "@club/ui/lib/utils";
 import { ContentEditable as LexicalContentEditable } from "@lexical/react/LexicalContentEditable";
-import { cn } from "../../../util";
 
 type Props = {
   placeholder: string;
@@ -12,7 +12,7 @@ export function ContentEditable({ placeholder, className }: Props) {
     <LexicalContentEditable
       className={cn(
         "relative block min-h-72 min-h-full overflow-auto px-8 py-4 focus:outline-none",
-        className
+        className,
       )}
       aria-placeholder={placeholder}
       placeholder={
