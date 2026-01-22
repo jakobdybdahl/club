@@ -1,3 +1,4 @@
+import { useAuth } from "@/providers/auth";
 import { Dialog, DialogContent } from "@club/ui/components/dialog";
 import {
   DropdownMenu,
@@ -33,13 +34,19 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { Link as BaseLink } from "react-router";
+import { Link as BaseLink, useLocation } from "react-router";
 
-function Link({ className, ...props }: React.ComponentProps<typeof BaseLink>) {
+function Link({
+  className,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  active,
+  ...props
+}: React.ComponentProps<typeof BaseLink> & { active: boolean }) {
   return <BaseLink className={cn("cursor-default", className)} {...props} />;
 }
 
 function PersonalNav() {
+  const { pathname } = useLocation();
   const [showSearchDialog, setShowSearchDialog] = useState(false);
 
   useHotkeys("mod+k", () => {
@@ -49,10 +56,8 @@ function PersonalNav() {
 
   return (
     <SidebarGroup>
-      {/* <SidebarGroupLabel>Personal</SidebarGroupLabel> */}
       <SidebarMenu>
         <SidebarMenuItem onClick={() => setShowSearchDialog(true)}>
-          {/* <SidebarMenuButton className="border border-sidebar-accent bg-sidebar-accent/40 -m-px"> */}
           <SidebarMenuButton>
             <SearchIcon />
             <div className="flex-1 flex items-center">
@@ -67,7 +72,7 @@ function PersonalNav() {
         <SidebarMenuItem>
           <SidebarMenuButton
             render={
-              <Link to="/">
+              <Link to="/" active={pathname === "/"}>
                 <HomeIcon />
                 <span>Home</span>
               </Link>
@@ -77,7 +82,7 @@ function PersonalNav() {
         <SidebarMenuItem>
           <SidebarMenuButton
             render={
-              <Link to="/events">
+              <Link to="/events" active={pathname.startsWith("/events")}>
                 <CalendarIcon />
                 <span>Events</span>
               </Link>
@@ -87,7 +92,7 @@ function PersonalNav() {
         <SidebarMenuItem>
           <SidebarMenuButton
             render={
-              <Link to="/inbox">
+              <Link to="/inbox" active={pathname.startsWith("/inbox")}>
                 <InboxIcon />
                 <span>Inbox</span>
               </Link>
@@ -105,6 +110,7 @@ function PersonalNav() {
 }
 
 function FavoritesNav() {
+  const { pathname } = useLocation();
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Favorites</SidebarGroupLabel>
@@ -113,7 +119,11 @@ function FavoritesNav() {
           <SidebarMenuItem key={i}>
             <SidebarMenuButton
               render={
-                <Link to="/c/odder-cykel-klub" className="truncate">
+                <Link
+                  to="/c/odder-cykel-klub"
+                  className="truncate"
+                  active={pathname.startsWith("/c/odder-cykel-klub")}
+                >
                   <StarIcon />
                   Odder Cykel Klub
                 </Link>
@@ -127,6 +137,7 @@ function FavoritesNav() {
 }
 
 function ExploreNav() {
+  const { pathname } = useLocation();
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Explore</SidebarGroupLabel>
@@ -134,7 +145,7 @@ function ExploreNav() {
         <SidebarMenuItem>
           <SidebarMenuButton
             render={
-              <Link to="/explore/clubs">
+              <Link to="/explore/clubs" active={pathname === "/explore/clubs"}>
                 <Building2Icon />
                 <span>Clubs</span>
               </Link>
@@ -144,7 +155,10 @@ function ExploreNav() {
         <SidebarMenuItem>
           <SidebarMenuButton
             render={
-              <Link to="/explore/events">
+              <Link
+                to="/explore/events"
+                active={pathname === "/explore/events"}
+              >
                 <CalendarSearchIcon />
                 <span>Events</span>
               </Link>
@@ -154,7 +168,7 @@ function ExploreNav() {
         <SidebarMenuItem>
           <SidebarMenuButton
             render={
-              <Link to="/explore/users">
+              <Link to="/explore/users" active={pathname === "/explore/users"}>
                 <UsersIcon />
                 <span>Users</span>
               </Link>
@@ -162,41 +176,6 @@ function ExploreNav() {
           />
         </SidebarMenuItem>
       </SidebarMenu>
-    </SidebarGroup>
-  );
-}
-
-function Search() {
-  const [showDialog, setShowDialog] = useState(false);
-
-  useHotkeys("mod+k", () => {
-    if (showDialog) return;
-    setShowDialog(true);
-  });
-
-  return (
-    <SidebarGroup>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <div className="relative">
-            <button
-              onClick={() => setShowDialog(true)}
-              className="dark:bg-input/30 flex items-center text-muted-foreground border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base md:text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
-            >
-              Search
-            </button>
-            <div className="absolute top-2 right-2.5 flex items-center gap-1">
-              <Mod mod="mod" />
-              <Kbd className="aspect-square">K</Kbd>
-            </div>
-          </div>
-        </SidebarMenuItem>
-      </SidebarMenu>
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="p-8">
-          <div>Search todo..</div>
-        </DialogContent>
-      </Dialog>
     </SidebarGroup>
   );
 }
@@ -229,6 +208,9 @@ function AccountSwitcher() {
 }
 
 function SignInItem() {
+  const { pathname } = useLocation();
+  const { authorize } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -238,9 +220,14 @@ function SignInItem() {
               <SidebarMenuButton
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground gap-3"
+                onClick={() => {
+                  if (isLoading) return;
+                  setIsLoading(true);
+                  authorize(pathname);
+                }}
               >
-                <div className="rounded-lg size-8 flex items-center justify-center bg-white/80 aspect-square">
-                  <LogInIcon className="size-5 text-background" />
+                <div className="rounded-lg size-7 flex items-center justify-center bg-white/80 aspect-square">
+                  <LogInIcon className="size-4 text-background" />
                 </div>
                 <div className="flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">Sign in</span>
@@ -262,14 +249,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <AccountSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        {/* <Search /> */}
         <PersonalNav />
         <FavoritesNav />
         <div className="flex-1" />
         <ExploreNav />
       </SidebarContent>
       <SidebarFooter className="border-t">
-        {/* <Button>Sign in</Button> */}
         <SignInItem />
       </SidebarFooter>
       <SidebarRail />

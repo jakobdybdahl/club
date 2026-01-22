@@ -25,14 +25,14 @@ export const handler = handle(
               process.env.AUTH_FRONTEND_URL +
                 "/auth/email?" +
                 params.toString(),
-              302
+              302,
             );
           }
 
           if (state.type === "code") {
             return Response.redirect(
               process.env.AUTH_FRONTEND_URL + "/auth/code?" + params.toString(),
-              302
+              302,
             );
           }
 
@@ -82,10 +82,11 @@ export const handler = handle(
     },
     async allow(input) {
       const url = new URL(input.redirectURI);
+      console.log("url", url);
       return (
         url.hostname.endsWith("localhost") ||
         url.hostname.endsWith("jakobdybdahl.com")
       );
     },
-  })
+  }),
 );

@@ -1,6 +1,10 @@
+import { Button } from "@club/ui/components/button";
+import { Input } from "@club/ui/components/input";
+import { Label } from "@club/ui/components/label";
+import { IconApp } from "@club/ui/icons/icon-app";
+import { cn } from "@club/ui/lib/utils";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, cn, IconApp, Input, Label } from "../../../../../ui-1/src";
 
 export function EmailForm({
   className,

@@ -1,4 +1,4 @@
-import "@club/ui/globals.css";
+import "./index.css";
 
 import dayjs from "dayjs";
 import "dayjs/locale/da";

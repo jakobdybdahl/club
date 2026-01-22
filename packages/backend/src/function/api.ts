@@ -24,7 +24,7 @@ export const api = new Hono()
         {
           message: error.message,
         },
-        403
+        403,
       );
     }
     if (error instanceof VersionMismatchError) {
@@ -32,7 +32,7 @@ export const api = new Hono()
         {
           message: error.message,
         },
-        409
+        409,
       );
     }
     if (error instanceof VisibleError) {
@@ -43,7 +43,7 @@ export const api = new Hono()
           message,
           detail,
         },
-        400
+        400,
       );
     }
     if (error instanceof HTTPException) {
@@ -51,7 +51,7 @@ export const api = new Hono()
         {
           message: error.message,
         },
-        error.status
+        error.status,
       );
     }
     console.error(error);
@@ -67,7 +67,7 @@ export const api = new Hono()
             })),
           },
         },
-        400
+        400,
       );
     }
     return c.json(
@@ -75,7 +75,7 @@ export const api = new Hono()
         code: "internal",
         message: "Internal server error",
       },
-      500
+      500,
     );
   })
   .get("/", (c) => c.text("ok"))

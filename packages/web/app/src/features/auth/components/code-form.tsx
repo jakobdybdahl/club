@@ -1,14 +1,14 @@
-import { useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import {
-  cn,
-  IconApp,
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-  REGEXP_ONLY_DIGITS,
-  Spinner,
-} from "../../../../../ui-1/src";
+} from "@club/ui/components/input-otp";
+import { Spinner } from "@club/ui/components/spinner";
+import { IconApp } from "@club/ui/icons/icon-app";
+import { cn } from "@club/ui/lib/utils";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export const CodeForm = ({
   className,
@@ -60,9 +60,7 @@ export const CodeForm = ({
                 <InputOTPSlot index={5} />
               </InputOTPGroup>
             </InputOTP>
-            {isSubmitting && (
-              <Spinner variant="primary" className="absolute -bottom-12" />
-            )}
+            {isSubmitting && <Spinner className="absolute -bottom-12" />}
           </div>
           <input type="hidden" name="action" value="verify" />
         </div>

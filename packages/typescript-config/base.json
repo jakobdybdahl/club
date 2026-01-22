@@ -8,11 +8,9 @@
     "moduleResolution": "bundler",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "declaration": true,
-    "declarationMap": true,
     "esModuleInterop": true,
     "noEmit": true,
     "isolatedModules": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"]
+    "lib": ["es2024", "ESNext.Array", "ESNext.Collection", "ESNext.Iterator"]
   }
 }

@@ -185,9 +185,9 @@ export const permissionGroupRelationships = relationships(
         sourceField: ["clubId", "userId"],
         destSchema: user,
         destField: ["clubId", "id"],
-      }
+      },
     ),
-  })
+  }),
 );
 
 export const schema = createSchema({

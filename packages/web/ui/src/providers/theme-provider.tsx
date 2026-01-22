@@ -29,7 +29,7 @@ export const useThemeStore = create<ThemeState & ThemeActions>()(
       setSyncWithSystem: (syncWithSystem) => set({ syncWithSystem }),
     }),
     {
-      name: "px.theme",
+      name: "app.theme",
     },
   ),
 );

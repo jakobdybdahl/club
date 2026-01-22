@@ -1,5 +1,5 @@
 import { SidebarInset, SidebarProvider } from "@club/ui/components/sidebar";
-import { Toaster } from "@club/ui/components/sonner";
+import { Toaster } from "@club/ui/components/sonner.js";
 import { ThemeProvider } from "@club/ui/providers/theme-provider";
 import { queries } from "@club/zero/queries";
 import { useQuery } from "@rocicorp/zero/react";

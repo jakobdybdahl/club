@@ -3,6 +3,9 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/noto-sans";
 
+@source "../**/*.{ts,tsx}";
+@source "../../app/**/*.{ts,tsx}";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {

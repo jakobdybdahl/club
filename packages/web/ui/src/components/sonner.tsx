@@ -1,4 +1,3 @@
-import { useTheme } from "@club/ui/providers/theme-provider";
 import {
   CircleCheckIcon,
   InfoIcon,
@@ -9,7 +8,8 @@ import {
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const [theme] = useTheme();
+  // const [theme] = useTheme();
+  const theme = "light" as const;
 
   return (
     <Sonner

@@ -37,7 +37,7 @@ const prepareActor = async () => {
     const clubsResult = await db.query.club.findMany({
       where: (_, { exists, eq }) =>
         exists(
-          db.select().from(user).where(eq(user.email, actor.properties.email))
+          db.select().from(user).where(eq(user.email, actor.properties.email)),
         ),
       with: {
         users: {
@@ -69,13 +69,13 @@ const prepareActor = async () => {
         const permissions = Array.from(
           user.permissionGroupMemberships
             .flatMap(({ group }) => group.permissions)
-            .reduce((set, p) => set.add(p), new Set<Permission>())
+            .reduce((set, p) => set.add(p), new Set<Permission>()),
         );
         return [
           club.id,
           { ...rest, user: { id: user.id, email: user.email }, permissions },
         ];
-      })
+      }),
     );
   })();
 
@@ -107,7 +107,7 @@ const prepareActor = async () => {
   };
 
   const byArgs = (
-    args: ReadonlyJSONValue | undefined
+    args: ReadonlyJSONValue | undefined,
   ): PublicActor | AccountActor | UserActor => {
     if (!args) return actor;
     if (actor.type === "public") return actor;
@@ -142,7 +142,7 @@ export const ZeroRoute = new Hono()
           });
         }),
       c.req.raw,
-      "info"
+      "info",
     );
     return c.json(response);
   })
@@ -151,11 +151,19 @@ export const ZeroRoute = new Hono()
     const res = await handleQueryRequest(
       (name, args) => {
         const query = mustGetQuery(queries, name);
-        return query.fn({ args, ctx: actor.byArgs(args) });
+        const ctx = actor.byArgs(args);
+        console.log(
+          JSON.stringify({
+            query: name,
+            args,
+            ctx,
+          }),
+        );
+        return query.fn({ args, ctx });
       },
       schema,
       c.req.raw,
-      "info"
+      "info",
     );
     return c.json(res);
   });

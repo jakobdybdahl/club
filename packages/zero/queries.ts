@@ -1,6 +1,23 @@
-import { defineQueries, defineQuery } from "@rocicorp/zero";
+import { defineQueries, defineQuery, escapeLike } from "@rocicorp/zero";
 import z from "zod";
 import { zql } from "./schema";
+
+const clubQueryParams = z.object({
+  member: z.string().optional(),
+  search: z.string().optional(),
+  sort: z.enum(["timeCreated", "timeUpdated", "name"]),
+  sortDirection: z.enum(["asc", "desc"]),
+});
+
+export type ClubQueryParams = z.infer<typeof clubQueryParams>;
+
+const clubRowSort = z.object({
+  id: z.string(),
+  timeCreated: z.number(),
+  timeUpdated: z.number(),
+});
+
+type ClubRowSort = z.infer<typeof clubRowSort>;
 
 export const clubSchema = z.object({
   clubId: z.nanoid(),
@@ -20,7 +37,7 @@ export const queries = defineQueries({
       .whereExists("members", (q) =>
         ctx.type === "account"
           ? q.where("email", ctx.properties.email)
-          : q.where("id", ctx.properties.userId)
+          : q.where("id", ctx.properties.userId),
       );
   }),
   cms: defineQuery(
@@ -36,7 +53,7 @@ export const queries = defineQueries({
         q = q.where("slug", args.value);
       }
       return q.one();
-    }
+    },
   ),
   pages: defineQuery(clubSchema, ({ args, ctx }) => {
     let q = zql.page.where("clubId", args.clubId);
@@ -55,15 +72,62 @@ export const queries = defineQueries({
         q = q.where("visibility", "=", "public");
       }
       return q.one();
-    }
+    },
   ),
-  clubs: defineQuery(() => {
-    return zql.club
-      .where("timeDeleted", "IS", null)
-      .related("users", (q) => q.orderBy("timeCreated", "desc").limit(100))
-      .related("events", (q) => q.orderBy("timeCreated", "desc").limit(10))
-      .limit(100);
-  }),
+  clubs: defineQuery(
+    z.object({
+      query: clubQueryParams,
+      limit: z.number().default(100),
+      start: clubRowSort.nullable(),
+      dir: z.enum(["forward", "backward"]),
+    }),
+    ({ args: { dir, limit, query, start } }) => {
+      // let q = zql.club
+      //   .limit(100)
+      //   .where("timeDeleted", "IS", null)
+      //   .related("users", (q) => q.orderBy("timeCreated", "desc").limit(100))
+      //   .related("events", (q) => q.orderBy("timeCreated", "desc").limit(10));
+
+      // return q;
+
+      let q = zql.club
+        .related("users", (q) => q.orderBy("timeCreated", "desc").limit(100))
+        .related("events", (q) => q.orderBy("timeCreated", "desc").limit(10));
+
+      // order by
+      const { sort: sortField, sortDirection } = query;
+      const orderByDir =
+        dir === "forward"
+          ? sortDirection
+          : sortDirection === "asc"
+            ? "desc"
+            : "asc";
+      q = q.orderBy(sortField, orderByDir).orderBy("id", orderByDir);
+
+      // pagination
+      if (start) {
+        q = q.start(start);
+      }
+      if (limit) {
+        q = q.limit(limit);
+      }
+
+      // query
+      const { member, search } = query;
+      q = q.where(({ and, cmp, exists, or }) =>
+        and(
+          member ? exists("users", (q) => q.where("email", member)) : undefined,
+          search
+            ? or(cmp("name", "ILIKE", `%${escapeLike(search)}%`))
+            : undefined,
+        ),
+      );
+
+      q = q.where("timeDeleted", "IS", null);
+
+      return q;
+    },
+  ),
   club: defineQuery(clubSchema, ({ args }) => {
     return zql.club
       .where("id", args.clubId)
@@ -98,8 +162,8 @@ export const queries = defineQueries({
             : undefined,
           ctx.type === "user"
             ? exists("users", (q) => q.where("id", ctx.properties.userId))
-            : undefined
-        )
+            : undefined,
+        ),
       );
     return q.related("club").one();
   }),

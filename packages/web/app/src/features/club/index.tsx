@@ -3,6 +3,8 @@ import { TimeAgo } from "@/components/ui/time-ago";
 import { useAccount } from "@/providers/account";
 import { PermissionProvider } from "@/providers/permissions";
 // import { useZero } from "@/providers/zero";
+import { mutators } from "@/providers/zero/mutators";
+import { Button } from "@club/ui/components/button";
 import {
   Dialog,
   DialogPopup,
@@ -11,6 +13,7 @@ import {
   DialogTopbarLabel,
 } from "@club/ui/components/dialog";
 import { Field } from "@club/ui/components/field";
+import { Separator } from "@club/ui/components/separator";
 import { Textarea } from "@club/ui/components/textarea";
 import { queries } from "@club/zero/queries";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,22 +24,6 @@ import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Navigate, Route, Routes, useParams } from "react-router";
 import { z } from "zod";
-// import {
-//   Button,
-//   Dialog,
-//   DialogPopup,
-//   DialogPortalWithOverlay,
-//   DialogTopbar,
-//   DialogTopbarLabel,
-//   Form,
-//   FormControl,
-//   FormField,
-//   Separator,
-//   Textarea,
-// } from "../../../../ui-1/src";
-import { mutators } from "@/providers/zero/mutators";
-import { Button } from "@club/ui/components/button";
-import { Separator } from "@club/ui/components/separator";
 import { NotFound } from "../error-pages";
 import { ClubContext, useClub, useUser } from "./context";
 
